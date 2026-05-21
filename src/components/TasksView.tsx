@@ -19,7 +19,6 @@ const TasksView: React.FC<TasksViewProps> = ({ tasks, setTasks, objectives = [],
     const [dragOverColId, setDragOverColId] = useState<string | null>(null);
 
     const [columnLabels, setColumnLabels] = useState<Record<string, string>>(() => {
-        const saved = localStorage.getItem('kanban_column_labels');
         const defaults = {
             todo: 'Abrir',
             'in-progress': 'À vista',
@@ -27,11 +26,15 @@ const TasksView: React.FC<TasksViewProps> = ({ tasks, setTasks, objectives = [],
             review: 'Parcelado',
             done: 'Concluído'
         };
-
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            if (parsed['in-progress'] === 'Em Andamento') return defaults;
-            return parsed;
+        try {
+            const saved = localStorage.getItem('kanban_column_labels');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed['in-progress'] === 'Em Andamento') return defaults;
+                return parsed;
+            }
+        } catch (e) {
+            console.error("Erro ao ler kanban_column_labels:", e);
         }
         return defaults;
     });

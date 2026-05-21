@@ -206,6 +206,14 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
                         <div className="input-row">
                             <input type="number" placeholder="Gasolina R$" value={today.gasolina || ''} onChange={(e) => handleInputChange('gasolina', e.target.value)}/>
                         </div>
+                        <div className="input-group-label">Manutenção</div>
+                        <div className="input-row">
+                            <input type="number" placeholder="Manutenção R$" value={today.manutencao || ''} onChange={(e) => handleInputChange('manutencao', e.target.value)}/>
+                        </div>
+                        <div className="input-group-label">Antecipação</div>
+                        <div className="input-row">
+                            <input type="number" placeholder="Antecipação R$" value={today.antecipacao || ''} onChange={(e) => handleInputChange('antecipacao', e.target.value)}/>
+                        </div>
                         <button className="ponto-btn" onClick={() => handleSave({})} style={{background: '#3b82f6', color: 'white', width: '100%', marginTop: '1rem'}}>💾 Salvar Registros</button>
                     </div>
                 </div>
@@ -233,44 +241,106 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
 
                     <div className="history-card">
                         <h3>🗓️ Histórico Recente</h3>
-                        <table className="history-table">
-                            <thead>
-                                <tr>
-                                    <th>Data</th>
-                                    <th>Ponto</th>
-                                    <th>KM</th>
-                                    <th>Ganhos</th>
-                                    <th>Gasolina</th>
-                                    <th>Lucro</th>
-                                    <th>Ação</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {history.map((record, i) => {
-                                    const km = record.km_final - record.km_inicial > 0 ? record.km_final - record.km_inicial : 0;
-                                    const lucro = record.ganhos - (record.gasolina + record.manutencao + record.antecipacao);
-                                    return (
-                                        <tr key={record.id || i}>
-                                            <td>{record.data.split('-').reverse().join('/')}</td>
-                                            <td>{record.entrada || '--'} - {record.saida || '--'}</td>
-                                            <td>{km.toFixed(1)} km</td>
-                                            <td className="pos-val">{formatBRL(record.ganhos)}</td>
-                                            <td className="neg-val">{formatBRL(record.gasolina)}</td>
-                                            <td className={lucro >= 0 ? "pos-val" : "neg-val"}>{formatBRL(lucro)}</td>
-                                            <td style={{textAlign: 'center'}}>
-                                                <button 
-                                                    className="delete-history-btn"
-                                                    onClick={() => handleDeleteRecord(record.id || record.data)}
-                                                    title="Remover do histórico"
-                                                >
-                                                    🗑️
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                        
+                        {/* Desktop Table View */}
+                        <div className="history-table-wrapper">
+                            <table className="history-table">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Ponto</th>
+                                        <th>KM</th>
+                                        <th>Ganhos</th>
+                                        <th>Gasolina</th>
+                                        <th>Manut.</th>
+                                        <th>Antecip.</th>
+                                        <th>Lucro</th>
+                                        <th>Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {history.map((record, i) => {
+                                        const km = (record.km_final || 0) - (record.km_inicial || 0) > 0 ? (record.km_final || 0) - (record.km_inicial || 0) : 0;
+                                        const lucro = (record.ganhos || 0) - ((record.gasolina || 0) + (record.manutencao || 0) + (record.antecipacao || 0));
+                                        const dataFormatada = record.data && typeof record.data === 'string' ? record.data.split('-').reverse().join('/') : '--';
+                                        return (
+                                            <tr key={record.id || i}>
+                                                <td>{dataFormatada}</td>
+                                                <td>{record.entrada || '--'} - {record.saida || '--'}</td>
+                                                <td>{km.toFixed(1)} km</td>
+                                                <td className="pos-val">{formatBRL(record.ganhos || 0)}</td>
+                                                <td className="neg-val">{formatBRL(record.gasolina || 0)}</td>
+                                                <td className="neg-val">{formatBRL(record.manutencao || 0)}</td>
+                                                <td className="neg-val">{formatBRL(record.antecipacao || 0)}</td>
+                                                <td className={lucro >= 0 ? "pos-val" : "neg-val"}>{formatBRL(lucro)}</td>
+                                                <td style={{textAlign: 'center'}}>
+                                                    <button 
+                                                        className="delete-history-btn"
+                                                        onClick={() => handleDeleteRecord(record.id || record.data)}
+                                                        title="Remover do histórico"
+                                                    >
+                                                        🗑️
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Mobile Cards View */}
+                        <div className="history-cards-wrapper">
+                            {history.map((record, i) => {
+                                const km = (record.km_final || 0) - (record.km_inicial || 0) > 0 ? (record.km_final || 0) - (record.km_inicial || 0) : 0;
+                                const lucro = (record.ganhos || 0) - ((record.gasolina || 0) + (record.manutencao || 0) + (record.antecipacao || 0));
+                                const dataFormatada = record.data && typeof record.data === 'string' ? record.data.split('-').reverse().join('/') : '--';
+                                return (
+                                    <div key={record.id || i} className="history-mobile-card">
+                                        <div className="card-header">
+                                            <span className="card-date">📅 {dataFormatada}</span>
+                                            <button 
+                                                className="delete-history-btn"
+                                                onClick={() => handleDeleteRecord(record.id || record.data)}
+                                                title="Remover do histórico"
+                                            >
+                                                🗑️
+                                            </button>
+                                        </div>
+                                        <div className="card-body-list">
+                                            <div className="card-body-item">
+                                                <span className="item-label">⏱️ Turno</span>
+                                                <span className="item-value">{record.entrada || '--'} - {record.saida || '--'}</span>
+                                            </div>
+                                            <div className="card-body-item">
+                                                <span className="item-label">🚗 KM Rodados</span>
+                                                <span className="item-value">{km.toFixed(1)} km</span>
+                                            </div>
+                                            <div className="card-body-item">
+                                                <span className="item-label">💰 Ganhos</span>
+                                                <span className="item-value pos-val">{formatBRL(record.ganhos || 0)}</span>
+                                            </div>
+                                            <div className="card-body-item">
+                                                <span className="item-label">⛽ Gasolina</span>
+                                                <span className="item-value neg-val">{formatBRL(record.gasolina || 0)}</span>
+                                            </div>
+                                            <div className="card-body-item">
+                                                <span className="item-label">🔧 Manutenção</span>
+                                                <span className="item-value neg-val">{formatBRL(record.manutencao || 0)}</span>
+                                            </div>
+                                            <div className="card-body-item">
+                                                <span className="item-label">💸 Antecipação</span>
+                                                <span className="item-value neg-val">{formatBRL(record.antecipacao || 0)}</span>
+                                            </div>
+                                        </div>
+                                        <div className="card-footer-lucro">
+                                            <span className="item-label">Lucro Líquido:</span>
+                                            <span className={`item-value ${lucro >= 0 ? "pos-val" : "neg-val"}`}>{formatBRL(lucro)}</span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
             </div>

@@ -55,8 +55,23 @@ const DashboardView: React.FC<DashboardViewProps> = ({
     const progressBRLValue = progressBRL !== undefined ? progressBRL : accumulatedBRL;
     const progress = progressPercent !== undefined ? progressPercent : (targetBRL > 0 ? (progressBRLValue / targetBRL) * 100 : 0);
 
-    const fmtBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-    const fmtUSD = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+    const formatBRL = (val: number) => {
+        try {
+            const num = typeof val === 'number' && !isNaN(val) && isFinite(val) ? val : 0;
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(num);
+        } catch {
+            return `R$ ${(val || 0).toFixed(2)}`;
+        }
+    };
+
+    const formatUSD = (val: number) => {
+        try {
+            const num = typeof val === 'number' && !isNaN(val) && isFinite(val) ? val : 0;
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+        } catch {
+            return `$ ${(val || 0).toFixed(2)}`;
+        }
+    };
 
     const displayedDailyGoalBRL = dailyDeliveryTarget !== undefined ? dailyDeliveryTarget : dailyGoalBRL;
     const displayedDailyGoalUSD = dailyDeliveryTarget !== undefined ? (dailyDeliveryTarget / exchangeRate) : dailyGoalUSD;
@@ -70,8 +85,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                     <span className="stat-icon">🎯</span>
                     <div className="stat-content">
                         <span className="stat-label">Meta Total (Metas + Dívidas)</span>
-                        <span className="stat-value">{fmtBRL.format(Math.max(0, targetBRL))}</span>
-                        <span className="stat-sub-value" style={{color: '#3498db', fontWeight: 'bold'}}>USD {fmtUSD.format(Math.max(0, targetUSD))}</span>
+                        <span className="stat-value">{formatBRL(targetBRL)}</span>
+                        <span className="stat-sub-value" style={{color: '#3498db', fontWeight: 'bold'}}>USD {formatUSD(targetUSD)}</span>
                     </div>
                 </div>
 
@@ -79,8 +94,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                     <span className="stat-icon">📅</span>
                     <div className="stat-content">
                         <span className="stat-label">Meta Mensal Consolidada</span>
-                        <span className="stat-value">{fmtBRL.format(Math.max(0, monthlyGoalBRL))}</span>
-                        <span className="stat-sub-value" style={{color: '#3498db'}}>USD {fmtUSD.format(Math.max(0, monthlyGoalUSD))}</span>
+                        <span className="stat-value">{formatBRL(monthlyGoalBRL)}</span>
+                        <span className="stat-sub-value" style={{color: '#3498db'}}>USD {formatUSD(monthlyGoalUSD)}</span>
                     </div>
                 </div>
 
@@ -88,8 +103,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                     <span className="stat-icon">📆</span>
                     <div className="stat-content">
                         <span className="stat-label">Meta Diária (Entregas)</span>
-                        <span className="stat-value">{fmtBRL.format(Math.max(0, displayedDailyGoalBRL))}</span>
-                        <span className="stat-sub-value" style={{color: '#3498db'}}>USD {fmtUSD.format(Math.max(0, displayedDailyGoalUSD))}</span>
+                        <span className="stat-value">{formatBRL(displayedDailyGoalBRL)}</span>
+                        <span className="stat-sub-value" style={{color: '#3498db'}}>USD {formatUSD(displayedDailyGoalUSD)}</span>
                     </div>
                 </div>
 
@@ -98,7 +113,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                     <div className="stat-content">
                         <span className="stat-label">Acumulado</span>
                         <span className="stat-value highlight">
-                            {fmtBRL.format(Math.max(0, typeof accumulatedBRL === 'number' ? accumulatedBRL : 0))}
+                            {formatBRL(accumulatedBRL)}
                         </span>
                     </div>
                 </div>
@@ -108,10 +123,10 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                     <div className="stat-content">
                         <span className="stat-label">Saldo p/ Quitação</span>
                         <span className="stat-value" style={{color: '#f59e0b'}}>
-                            {fmtBRL.format(Math.max(0, totalDebtsPropostaBRL))}
+                            {formatBRL(totalDebtsPropostaBRL)}
                         </span>
                         <span className="stat-sub-value" style={{color: '#10b981'}}>
-                            Economia: {fmtBRL.format(Math.max(0, totalDebtsOriginalBRL - totalDebtsPropostaBRL))}
+                            Economia: {formatBRL(totalDebtsOriginalBRL - totalDebtsPropostaBRL)}
                         </span>
                     </div>
                 </div>
@@ -120,9 +135,9 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                     <span className="stat-icon">📊</span>
                     <div className="stat-content">
                         <span className="stat-label">Progresso Geral</span>
-                        <span className="stat-value">{Math.max(0, progress).toFixed(2)}%</span>
+                        <span className="stat-value">{Math.max(0, typeof progress === 'number' && !isNaN(progress) ? progress : 0).toFixed(2)}%</span>
                         <div className="mini-progress-bar">
-                            <div className="mini-progress-fill" style={{ width: `${Math.max(0, Math.min(progress, 100))}%` }}></div>
+                            <div className="mini-progress-fill" style={{ width: `${Math.max(0, Math.min(typeof progress === 'number' && !isNaN(progress) ? progress : 0, 100))}%` }}></div>
                         </div>
                     </div>
                 </div>

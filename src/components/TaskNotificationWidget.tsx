@@ -34,7 +34,14 @@ const TaskNotificationWidget: React.FC<TaskNotificationWidgetProps> = ({ tasks, 
         if (!hasUrgent) return;
 
         if ('Notification' in window && Notification.permission === 'granted') {
-            const notifiedIds: string[] = JSON.parse(localStorage.getItem('notified_tasks') || '[]');
+            let notifiedIds: string[] = [];
+            try {
+                const stored = localStorage.getItem('notified_tasks');
+                const parsed = stored ? JSON.parse(stored) : [];
+                if (Array.isArray(parsed)) notifiedIds = parsed;
+            } catch (e) {
+                console.error("Erro ao ler notified_tasks:", e);
+            }
             const tasksToNotify = urgentTasks.filter(t => !notifiedIds.includes(t.id));
 
             if (tasksToNotify.length > 0) {
@@ -59,7 +66,9 @@ const TaskNotificationWidget: React.FC<TaskNotificationWidgetProps> = ({ tasks, 
                     notifiedIds.push(task.id);
                 });
 
-                localStorage.setItem('notified_tasks', JSON.stringify(notifiedIds));
+                try {
+                    localStorage.setItem('notified_tasks', JSON.stringify(notifiedIds));
+                } catch {}
             }
         }
     }, [urgentTasks, onOpenTasks, todayDate, hasUrgent]);

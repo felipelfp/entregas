@@ -245,9 +245,98 @@
     background: #2563eb;
 }
 
+/* Mobile history view by default */
+.history-table-wrapper {
+    display: none;
+}
+
+.history-cards-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.history-mobile-card {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.history-mobile-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 0.4rem;
+}
+
+.history-mobile-card .card-date {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #e2e8f0;
+}
+
+.history-mobile-card .card-body-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.history-mobile-card .card-body-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+    padding-bottom: 0.35rem;
+}
+
+.history-mobile-card .card-body-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.history-mobile-card .item-label {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    font-weight: 700;
+}
+
+.history-mobile-card .item-value {
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.history-mobile-card .card-footer-lucro {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(59, 130, 246, 0.05);
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    padding-top: 0.5rem;
+    margin-top: 0.2rem;
+}
+
+.history-mobile-card .card-footer-lucro .item-value {
+    font-size: 0.95rem;
+}
+
 @media (min-width: 600px) {
     .stats-bar {
         grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .history-table-wrapper {
+        display: block;
+    }
+    
+    .history-cards-wrapper {
+        display: none;
     }
 }
 

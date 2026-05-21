@@ -12,8 +12,13 @@ const PremiumDashboard: React.FC<any> = ({ debts = [], tasks = [], onAdd, onUpda
 
     const formatBRLDisplay = (val: any) => {
         if (val === undefined || val === null || val === '') return '';
-        const num = typeof val === 'number' ? val : parseFloat(String(val).replace(/\./g, '').replace(',', '.')) || 0;
-        return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        try {
+            const num = typeof val === 'number' ? val : parseFloat(String(val).replace(/\./g, '').replace(',', '.')) || 0;
+            const validNum = !isNaN(num) && isFinite(num) ? num : 0;
+            return validNum.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        } catch {
+            return '0,00';
+        }
     };
 
     const formatBRLInput = (value: string) => {
@@ -36,11 +41,14 @@ const PremiumDashboard: React.FC<any> = ({ debts = [], tasks = [], onAdd, onUpda
         return parseFloat(withDot) || 0;
     };
 
-    const fmt = useMemo(() => new Intl.NumberFormat('pt-BR', { 
-        style: 'currency', 
-        currency: 'BRL',
-        minimumFractionDigits: 2 
-    }), []);
+    const formatCurrencyBRL = (val: number) => {
+        try {
+            const num = typeof val === 'number' && !isNaN(val) && isFinite(val) ? val : 0;
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(num);
+        } catch {
+            return `R$ ${(val || 0).toFixed(2)}`;
+        }
+    };
 
     useEffect(() => {
         if (Array.isArray(debts)) {
@@ -135,15 +143,15 @@ const PremiumDashboard: React.FC<any> = ({ debts = [], tasks = [], onAdd, onUpda
                 <header className="premium-summary">
                     <div className="premium-summary-card">
                         <span className="label">Dívida Original</span>
-                        <span className="value" style={{color: '#3b82f6'}}>{fmt.format(totals.orig)}</span>
+                        <span className="value" style={{color: '#3b82f6'}}>{formatCurrencyBRL(totals.orig)}</span>
                     </div>
                     <div className="premium-summary-card">
                         <span className="label">Proposta Atual</span>
-                        <span className="value" style={{color: '#f59e0b'}}>{fmt.format(totals.prop)}</span>
+                        <span className="value" style={{color: '#f59e0b'}}>{formatCurrencyBRL(totals.prop)}</span>
                     </div>
                     <div className="premium-summary-card">
                         <span className="label">Economia Estimada</span>
-                        <span className="value" style={{color: '#10b981'}}>{fmt.format(totals.eco)}</span>
+                        <span className="value" style={{color: '#10b981'}}>{formatCurrencyBRL(totals.eco)}</span>
                     </div>
                 </header>
 

@@ -4,8 +4,13 @@ import { Deposit } from '../components/DepositForm';
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 const getLocal = (key: string) => {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : null;
+    try {
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : null;
+    } catch (e) {
+        console.error(`Erro ao ler ${key} do localStorage:`, e);
+        return null;
+    }
 };
 
 const setLocal = (key: string, data: any) => {

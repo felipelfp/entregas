@@ -53,6 +53,19 @@ const DepositForm: React.FC<DepositFormProps> = ({ exchangeRate, onDeposit, obje
         return parseFloat(withDot) || 0;
     };
 
+    const parseUSDValue = (value: string): number => {
+        if (!value) return 0;
+        if (value.includes('.') && !value.includes(',')) {
+            const parts = value.split('.');
+            if (parts.length === 2 && parts[1].length <= 2) {
+                return parseFloat(value) || 0;
+            }
+        }
+        const withoutDots = value.replace(/\./g, '');
+        const withDot = withoutDots.replace(',', '.');
+        return parseFloat(withDot) || 0;
+    };
+
     useEffect(() => {
 
         const now = new Date();
@@ -76,7 +89,7 @@ const DepositForm: React.FC<DepositFormProps> = ({ exchangeRate, onDeposit, obje
         const formatted = formatBRLInput(value);
         setAmountUSD(formatted);
 
-        const usd = parseBRLValue(formatted);
+        const usd = parseUSDValue(formatted);
         if (!isNaN(usd) && exchangeRate > 0) {
             const brlValue = usd * exchangeRate;
             setAmountBRL(formatBRLInput(brlValue.toString()));
@@ -94,7 +107,7 @@ const DepositForm: React.FC<DepositFormProps> = ({ exchangeRate, onDeposit, obje
             date,
             time,
             amountBRL: parseBRLValue(amountBRL),
-            amountUSD: parseBRLValue(amountUSD || '0'),
+            amountUSD: parseUSDValue(amountUSD || '0'),
             bank,
             objectiveId: selectedObjectiveId || undefined,
         };

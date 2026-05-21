@@ -80,6 +80,24 @@ const Objectives: React.FC<ObjectivesProps> = ({ category, objectives, onToggleC
     const [editingId, setEditingId] = React.useState<string | null>(null);
     const [editObjParams, setEditObjParams] = React.useState({ name: '', targetBRL: '', accumulatedBRL: '', icon: '' });
 
+    const formatBRL = (val: number) => {
+        try {
+            const num = typeof val === 'number' && !isNaN(val) && isFinite(val) ? val : 0;
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(num);
+        } catch {
+            return `R$ ${(val || 0).toFixed(2)}`;
+        }
+    };
+
+    const formatUSD = (val: number) => {
+        try {
+            const num = typeof val === 'number' && !isNaN(val) && isFinite(val) ? val : 0;
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+        } catch {
+            return `$ ${(val || 0).toFixed(2)}`;
+        }
+    };
+
     const listRef = React.useRef<HTMLDivElement | null>(null);
     const isHovered = React.useRef(false);
 
@@ -371,19 +389,19 @@ const Objectives: React.FC<ObjectivesProps> = ({ category, objectives, onToggleC
                             <div className="card-body">
                                 <div className="stat-row">
                                     <span>Meta (BRL)</span>
-                                    <strong>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(displayTargetBRL)}</strong>
+                                    <strong>{formatBRL(displayTargetBRL)}</strong>
                                 </div>
                                 <div className="stat-row">
                                     <span>Meta (USD)</span>
-                                    <strong>{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(displayTargetUSD)}</strong>
+                                    <strong>{formatUSD(displayTargetUSD)}</strong>
                                 </div>
                                 <div className="stat-row">
                                     <span>Acumulado (BRL)</span>
-                                    <strong className="highlight-value">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(obj.accumulatedBRL)}</strong>
+                                    <strong className="highlight-value">{formatBRL(obj.accumulatedBRL)}</strong>
                                 </div>
                                 <div className="stat-row">
                                     <span>Acumulado (USD)</span>
-                                    <strong className="highlight-value-usd">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(obj.accumulatedBRL / exchangeRate)}</strong>
+                                    <strong className="highlight-value-usd">{formatUSD(obj.accumulatedBRL / exchangeRate)}</strong>
                                 </div>
                                 {onScheduleTask && (
                                     <div className="card-scheduler">

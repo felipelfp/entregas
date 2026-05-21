@@ -27,7 +27,12 @@ const FinancialOverview: React.FC<FinancialOverviewProps> = ({
     const [history, setHistory] = useState<any[]>([]);
 
     const formatBRL = (value: number) => {
-        return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        try {
+            const num = typeof value === 'number' && !isNaN(value) && isFinite(value) ? value : 0;
+            return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        } catch {
+            return (value || 0).toFixed(2).replace('.', ',');
+        }
     };
 
     const parseBRLValue = (value: string | number): number => {

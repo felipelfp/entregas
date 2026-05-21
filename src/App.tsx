@@ -50,11 +50,19 @@ export const initialDebts = [
 
 const AppContent: React.FC = () => {
     const { theme } = useTheme();
+    const formatBRLText = (val: number) => {
+        try {
+            const num = typeof val === 'number' && !isNaN(val) && isFinite(val) ? val : 0;
+            return new Intl.NumberFormat('pt-BR').format(num);
+        } catch {
+            return (val || 0).toFixed(2).replace('.', ',');
+        }
+    };
     const [isAuthenticated, setIsAuthenticated] = useState(true);
     const [activeSection, setActiveSection] = useState('dashboard');
     const [exchangeRate, setExchangeRate] = useState(5.00);
     const [transactions, setTransactions] = useState<Deposit[]>([]);
-    const [objectives, setObjectives] = useState<Objective[]>(initialObjectives);
+    const [objectives, setObjectives] = useState<Objective[]>([]);
     const [debts, setDebts] = useState<any[]>(initialDebts);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [deliveryStats, setDeliveryStats] = useState({ profit: 0, totalProfitAllTime: 0, km: 0, gasolina: 0, manutencao: 0, ganhosBrutos: 0 });
@@ -117,17 +125,8 @@ const AppContent: React.FC = () => {
             if (Array.isArray(txs)) setTransactions(txs);
 
             const objs = await api.getObjectives();
-            if (Array.isArray(objs) && objs.length > 0) {
-                const combined = [...initialObjectives];
-                objs.forEach((apiObj: Objective) => {
-                    const exists = combined.find(o => o.id === apiObj.id);
-                    if (!exists) combined.push(apiObj);
-                    else {
-                        const index = combined.findIndex(o => o.id === apiObj.id);
-                        combined[index] = { ...combined[index], ...apiObj };
-                    }
-                });
-                setObjectives(combined);
+            if (Array.isArray(objs)) {
+                setObjectives(objs);
             }
 
             const dbts = await api.getDebts();
@@ -559,9 +558,9 @@ const AppContent: React.FC = () => {
                                 <div className="total-goal-info">
                                     <span className="total-goal-label">Progresso Financeiro</span>
                                     <div style={{display: 'flex', flexDirection: 'column', gap: '3px'}}>
-                                        <span className="total-goal-brl" style={{fontSize: '1rem'}}>Meta: R$ {new Intl.NumberFormat('pt-BR').format(totalTargetBRL)}</span>
-                                        <span className="total-goal-usd" style={{fontSize: '0.8rem', color: '#10b981', fontWeight: 800}}>Acumulado: R$ {new Intl.NumberFormat('pt-BR').format(accumulatedBRL)}</span>
-                                        <span className="total-goal-usd" style={{fontSize: '0.7rem', color: '#3498db'}}>Pendente: R$ {new Intl.NumberFormat('pt-BR').format(totalRemainingBRL)}</span>
+                                        <span className="total-goal-brl" style={{fontSize: '1rem'}}>Meta: R$ {formatBRLText(totalTargetBRL)}</span>
+                                        <span className="total-goal-usd" style={{fontSize: '0.8rem', color: '#10b981', fontWeight: 800}}>Acumulado: R$ {formatBRLText(accumulatedBRL)}</span>
+                                        <span className="total-goal-usd" style={{fontSize: '0.7rem', color: '#3498db'}}>Pendente: R$ {formatBRLText(totalRemainingBRL)}</span>
                                     </div>
                                 </div>
                             </div>
@@ -575,7 +574,7 @@ const AppContent: React.FC = () => {
                                         onChange={(e) => setExchangeRate(parseFloat(e.target.value) || 0)}
                                         className="rate-input-small"
                                     />
-                                    <span className="rate-value">R$ {exchangeRate.toFixed(2)}</span>
+                                    <span className="rate-value">R$ {typeof exchangeRate === 'number' && !isNaN(exchangeRate) ? exchangeRate.toFixed(2) : '5.00'}</span>
                                 </div>
                             </div>
                         </div>

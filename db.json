@@ -10,24 +10,6 @@
       "category": "BR"
     },
     {
-      "id": "guarda_roupa",
-      "icon": "👕",
-      "name": "Guarda-Roupa Casal Luiza",
-      "targetBRL": 1000,
-      "targetUSD": 194.17,
-      "completed": false,
-      "category": "BR"
-    },
-    {
-      "id": "cama_box",
-      "icon": "🛏️",
-      "name": "Conjunto Cama Box c/ Molas",
-      "targetBRL": 1200,
-      "targetUSD": 233.01,
-      "completed": false,
-      "category": "BR"
-    },
-    {
       "id": "cama_box",
       "icon": "🛏️",
       "name": "Conjunto Cama Box c/ Molas",
@@ -331,29 +313,11 @@
       "date": "2026-05-21",
       "time": "14:03",
       "amountBRL": 100,
-      "amountUSD": 1993,
+      "amountUSD": 19.93,
       "bank": "Nubank"
     }
   ],
   "tasks": [
-    {
-      "error": "Resource not found",
-      "status": "testing",
-      "completed": false,
-      "id": "17737799956746173"
-    },
-    {
-      "error": "Resource not found",
-      "id": "17737799980001375",
-      "status": "in-progress",
-      "completed": false
-    },
-    {
-      "error": "Resource not found",
-      "id": "17737799980276010",
-      "status": "review",
-      "completed": false
-    },
     {
       "title": "tim",
       "date": "2026-03-17",
@@ -607,7 +571,7 @@
     }
   ],
   "settings": {
-    "exchangeRate": 5.0176,
+    "exchangeRate": 5.0011,
     "financialOverview": {
       "rendaFixaFelipe": "0",
       "rendaFixaFernanda": "1000",

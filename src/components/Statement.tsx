@@ -14,11 +14,39 @@ const Statement: React.FC<StatementProps> = ({ transactions, onDelete }) => {
         tx.bank.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const formatBRL = (val: number) => {
+        try {
+            const num = typeof val === 'number' && !isNaN(val) && isFinite(val) ? val : 0;
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(num);
+        } catch {
+            return `R$ ${(val || 0).toFixed(2)}`;
+        }
+    };
+
+    const formatUSD = (val: number) => {
+        try {
+            const num = typeof val === 'number' && !isNaN(val) && isFinite(val) ? val : 0;
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+        } catch {
+            return `$ ${(val || 0).toFixed(2)}`;
+        }
+    };
+
+    const formatDate = (dateStr: string) => {
+        try {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return dateStr;
+            return d.toLocaleDateString('pt-BR');
+        } catch {
+            return dateStr;
+        }
+    };
+
     return (
         <div className="statement-container glass">
             <h3 className="statement-title">Extrato Recente</h3>
 
-            {}
+            {/* Campo de pesquisa */}
             <div className="statement-search-container">
                 <input 
                     type="text" 
@@ -50,16 +78,16 @@ const Statement: React.FC<StatementProps> = ({ transactions, onDelete }) => {
                                 <span className="tx-icon">🏦</span>
                                 <div className="tx-details">
                                     <span className="tx-bank">{tx.bank}</span>
-                                    <span className="tx-date">{new Date(tx.date).toLocaleDateString('pt-BR')} • {tx.time}</span>
+                                    <span className="tx-date">{formatDate(tx.date)} • {tx.time}</span>
                                 </div>
                             </div>
                             <div className="tx-right">
                                 <div className="tx-values">
                                     <span className="tx-amount positive">
-                                        + {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(tx.amountBRL)}
+                                        + {formatBRL(tx.amountBRL)}
                                     </span>
                                     <span className="tx-usd">
-                                        ({new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(tx.amountUSD)})
+                                        ({formatUSD(tx.amountUSD)})
                                     </span>
                                 </div>
                                 <button
