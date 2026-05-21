@@ -15,7 +15,9 @@ const TaskNotificationWidget: React.FC<TaskNotificationWidgetProps> = ({ tasks, 
     const pendingTasks = tasks.filter(t => !t.completed);
 
     const urgentTasks = pendingTasks.filter(t => {
+        if (!t.date) return false;
         const taskDateObj = new Date(t.date + 'T12:00:00');
+        if (isNaN(taskDateObj.getTime())) return false;
         const todayObj = new Date(todayDate);
         return taskDateObj <= todayObj;
     });
@@ -39,27 +41,28 @@ const TaskNotificationWidget: React.FC<TaskNotificationWidgetProps> = ({ tasks, 
                 tasksToNotify.forEach(task => {
                     const todayObjNotify = new Date(todayDate);
                     const taskDateObjNotify = new Date(task.date + 'T12:00:00');
-                    const isLate = taskDateObjNotify < todayObjNotify;
-                    const daysLate = isLate ? Math.floor((todayObjNotify.getTime() - taskDateObjNotify.getTime()) / (1000 * 3600 * 24)) : 0;
-                    const titleStr = isLate ? `⚠️ Tarefa Atrasada (${daysLate} dias)!` : '🔔 Tarefa para Hoje!';
-                    const notification = new Notification(titleStr, {
-                        body: task.title,
-                        icon: '/vite.svg'
-                    });
+                    if (!isNaN(taskDateObjNotify.getTime())) {
+                        const isLate = taskDateObjNotify < todayObjNotify;
+                        const daysLate = isLate ? Math.floor((todayObjNotify.getTime() - taskDateObjNotify.getTime()) / (1000 * 3600 * 24)) : 0;
+                        const titleStr = isLate ? `⚠️ Tarefa Atrasada (${daysLate} dias)!` : '🔔 Tarefa para Hoje!';
+                        const notification = new Notification(titleStr, {
+                            body: task.title,
+                            icon: '/vite.svg'
+                        });
 
-                    notification.onclick = () => {
-                        window.focus();
-                        onOpenTasks();
-                        notification.close();
-                    };
-
+                        notification.onclick = () => {
+                            window.focus();
+                            onOpenTasks();
+                            notification.close();
+                        };
+                    }
                     notifiedIds.push(task.id);
                 });
 
                 localStorage.setItem('notified_tasks', JSON.stringify(notifiedIds));
             }
         }
-    }, [urgentTasks, onOpenTasks, todayDate]);
+    }, [urgentTasks, onOpenTasks, todayDate, hasUrgent]);
 
     useEffect(() => {
         const handleClickOutside = () => setIsOpen(false);
@@ -97,7 +100,7 @@ const TaskNotificationWidget: React.FC<TaskNotificationWidgetProps> = ({ tasks, 
                         ) : (
                             urgentTasks.map(task => {
                                 const taskDateObj = new Date(task.date + 'T12:00:00');
-                                const isLate = taskDateObj < new Date(todayDate);
+                                const isLate = !isNaN(taskDateObj.getTime()) && taskDateObj < new Date(todayDate);
                                 const daysLate = isLate ? Math.floor((new Date(todayDate).getTime() - taskDateObj.getTime()) / (1000 * 3600 * 24)) : 0;
 
                                 return (

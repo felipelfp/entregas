@@ -325,7 +325,16 @@
       "vencimento": 10
     }
   ],
-  "transactions": [],
+  "transactions": [
+    {
+      "id": "17793832063285424",
+      "date": "2026-05-21",
+      "time": "14:03",
+      "amountBRL": 100,
+      "amountUSD": 1993,
+      "bank": "Nubank"
+    }
+  ],
   "tasks": [
     {
       "error": "Resource not found",
@@ -598,7 +607,17 @@
     }
   ],
   "settings": {
-    "exchangeRate": 5.0116
+    "exchangeRate": 5.0176,
+    "financialOverview": {
+      "rendaFixaFelipe": "0",
+      "rendaFixaFernanda": "1000",
+      "metaRendaExtra": "0",
+      "rendaExtraRealizada": "156.00",
+      "despesasFixas": "2129",
+      "mensalidadeEstudos": "490",
+      "metaPoupanca": "3548.99",
+      "reservaEmergencia": "500"
+    }
   },
   "deliveries": [
     {

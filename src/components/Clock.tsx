@@ -1,26 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import './Clock.css';
+
 const Clock: React.FC = () => {
     const [time, setTime] = useState(new Date());
+
     useEffect(() => {
         const timer = setInterval(() => {
             setTime(new Date());
         }, 1000);
         return () => clearInterval(timer);
     }, []);
+
     const getFormattedTime = (timeZone: string) => {
-        return time.toLocaleTimeString('pt-BR', {
-            timeZone,
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        try {
+            return time.toLocaleTimeString('pt-BR', {
+                timeZone,
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (e) {
+            return time.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
     };
-    const formattedDate = time.toLocaleDateString('pt-BR', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    });
+
+    const formattedDate = (() => {
+        try {
+            return time.toLocaleDateString('pt-BR', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+        } catch (e) {
+            return time.toLocaleDateString('pt-BR') || time.toDateString();
+        }
+    })();
+
     return (
         <div className="clock-container matrix-theme">
             <div className="clock-times-row">
@@ -38,4 +56,5 @@ const Clock: React.FC = () => {
         </div>
     );
 };
+
 export default Clock;

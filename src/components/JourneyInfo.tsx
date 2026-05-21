@@ -58,18 +58,29 @@ interface JourneyInfoProps {
 }
 
 const JourneyInfo: React.FC<JourneyInfoProps> = ({ exchangeRate, accumulatedBRL, targetBRL, targetUSD, objectives, transactions }) => {
-    const formatBRL = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
-    const formatUSD = (val: number) => val.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    const formatBRL = (val: number) => {
+        try {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+        } catch {
+            return `R$ ${val.toFixed(2)}`;
+        }
+    };
+    
+    const formatUSD = (val: number) => {
+        try {
+            return val.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+        } catch {
+            return `$ ${val.toFixed(2)}`;
+        }
+    };
 
     const [currentDate, setCurrentDate] = useState(new Date());
     const [simMonths, setSimMonths] = useState(0);
 
     useEffect(() => {
-
         const timer = setInterval(() => {
             setCurrentDate(new Date());
         }, 60000); 
-
         return () => clearInterval(timer);
     }, []);
 
@@ -83,26 +94,34 @@ const JourneyInfo: React.FC<JourneyInfoProps> = ({ exchangeRate, accumulatedBRL,
     let startDate = new Date();
 
     if (transactions && transactions.length > 0) {
-
         const sortedDates = [...transactions]
             .map(t => new Date(t.date).getTime())
+            .filter(t => !isNaN(t))
             .sort((a, b) => a - b);
-        const firstDate = sortedDates[0];
-        startDate = new Date(firstDate);
-        daysPassed = Math.max(1, Math.ceil((currentDate.getTime() - firstDate) / (1000 * 60 * 60 * 24)));
+        if (sortedDates.length > 0) {
+            const firstDate = sortedDates[0];
+            startDate = new Date(firstDate);
+            daysPassed = Math.max(1, Math.ceil((currentDate.getTime() - firstDate) / (1000 * 60 * 60 * 24)));
+        } else {
+            daysPassed = 1;
+        }
     } else {
-
         const savedStartDate = localStorage.getItem('journeyStartDate');
-        if (savedStartDate) {
+        if (savedStartDate && savedStartDate !== "Invalid Date") {
             startDate = new Date(savedStartDate);
+            if (isNaN(startDate.getTime())) {
+                startDate = new Date();
+                localStorage.setItem('journeyStartDate', startDate.toISOString());
+            }
             daysPassed = Math.max(1, Math.ceil((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
         } else {
-
-            localStorage.setItem('journeyStartDate', currentDate.toISOString());
+            startDate = new Date();
+            localStorage.setItem('journeyStartDate', startDate.toISOString());
             daysPassed = 1;
         }
     }
 
+    if (isNaN(daysPassed)) daysPassed = 1;
     const currentMonth = Math.ceil(daysPassed / 30);
     const daysInCurrentMonth = ((daysPassed - 1) % 30) + 1;
 
@@ -165,7 +184,21 @@ const JourneyInfo: React.FC<JourneyInfoProps> = ({ exchangeRate, accumulatedBRL,
                         </div>
 
                         <div style={{marginTop: '15px', padding: '10px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.05)', fontSize: '0.8em', textAlign: 'center', opacity: 0.7}}>
-                            <p>📅 Data de Início da Jornada: {startDate.toLocaleDateString('pt-BR')} ({startDate.toLocaleDateString('pt-BR', {weekday: 'long'})}) </p>
+                            <p>
+                                📅 Data de Início da Jornada: {(() => {
+                                    try {
+                                        return startDate.toLocaleDateString('pt-BR');
+                                    } catch {
+                                        return new Date().toLocaleDateString('pt-BR');
+                                    }
+                                })()} ({(() => {
+                                    try {
+                                        return startDate.toLocaleDateString('pt-BR', {weekday: 'long'});
+                                    } catch {
+                                        return new Date().toLocaleDateString('pt-BR', {weekday: 'long'});
+                                    }
+                                })()})
+                            </p>
                             <button 
                                 onClick={() => {
                                     localStorage.removeItem('journeyStartDate');
