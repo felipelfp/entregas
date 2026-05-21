@@ -1,0 +1,617 @@
+{
+  "objectives": [
+    {
+      "id": "guarda_roupa",
+      "icon": "👕",
+      "name": "Guarda-Roupa Casal Luiza",
+      "targetBRL": 1000,
+      "targetUSD": 194.17,
+      "completed": false,
+      "category": "BR"
+    },
+    {
+      "id": "guarda_roupa",
+      "icon": "👕",
+      "name": "Guarda-Roupa Casal Luiza",
+      "targetBRL": 1000,
+      "targetUSD": 194.17,
+      "completed": false,
+      "category": "BR"
+    },
+    {
+      "id": "cama_box",
+      "icon": "🛏️",
+      "name": "Conjunto Cama Box c/ Molas",
+      "targetBRL": 1200,
+      "targetUSD": 233.01,
+      "completed": false,
+      "category": "BR"
+    },
+    {
+      "id": "cama_box",
+      "icon": "🛏️",
+      "name": "Conjunto Cama Box c/ Molas",
+      "targetBRL": 1200,
+      "targetUSD": 233.01,
+      "completed": false,
+      "category": "BR"
+    }
+  ],
+  "debts": [
+    {
+      "id": 1,
+      "titular": "Casa",
+      "banco": "IPTU",
+      "valor": 50,
+      "tipo": "parcelado",
+      "vlrP": 50,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 2,
+      "titular": "Casa",
+      "banco": "Celular",
+      "valor": 99,
+      "tipo": "avista",
+      "vlrP": 99,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 3,
+      "titular": "Felipe",
+      "banco": "TIM",
+      "valor": "110,13",
+      "tipo": "avista",
+      "vlrP": "44,05",
+      "qtd": 1,
+      "status": "andamento",
+      "entrada": ""
+    },
+    {
+      "id": 4,
+      "titular": "Casa",
+      "banco": "Internet",
+      "valor": 130,
+      "tipo": "avista",
+      "vlrP": 130,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 5,
+      "titular": "Felipe",
+      "banco": "ShopeePay",
+      "valor": 138.74,
+      "tipo": "avista",
+      "vlrP": 55.25,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 6,
+      "titular": "Fernanda",
+      "banco": "ShopeePay",
+      "valor": 139.88,
+      "tipo": "avista",
+      "vlrP": 69.93,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 7,
+      "titular": "Felipe",
+      "banco": "Vivo",
+      "valor": 145.84,
+      "tipo": "avista",
+      "vlrP": 138.54,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 8,
+      "titular": "Casa",
+      "banco": "Luz",
+      "valor": 150,
+      "tipo": "avista",
+      "vlrP": 150,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 9,
+      "titular": "Casa",
+      "banco": "Condominio",
+      "valor": 350,
+      "tipo": "avista",
+      "vlrP": 350,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 10,
+      "titular": "Felipe",
+      "banco": "Santander",
+      "valor": 545.87,
+      "tipo": "avista",
+      "vlrP": 85.33,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 11,
+      "titular": "Felipe",
+      "banco": "Nubank",
+      "valor": "700,48",
+      "tipo": "avista",
+      "vlrP": "164,00",
+      "qtd": 1,
+      "status": "quitado",
+      "entrada": "",
+      "parcelasPagas": 1
+    },
+    {
+      "id": 12,
+      "titular": "Felipe",
+      "banco": "Senff",
+      "valor": 999.88,
+      "tipo": "avista",
+      "vlrP": 712.54,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 13,
+      "titular": "Felipe",
+      "banco": "Pefisa (ARC4)",
+      "valor": 1247.29,
+      "tipo": "avista",
+      "vlrP": 296.89,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 14,
+      "titular": "Felipe",
+      "banco": "Claro",
+      "valor": 1250.94,
+      "tipo": "avista",
+      "vlrP": 493.87,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 15,
+      "titular": "Fernanda",
+      "banco": "Simplic",
+      "valor": 1301.73,
+      "tipo": "avista",
+      "vlrP": 310.41,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 16,
+      "titular": "Felipe",
+      "banco": "Casas Bahia (Rec)",
+      "valor": 1348.11,
+      "tipo": "avista",
+      "vlrP": 1241.04,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 17,
+      "titular": "Casa",
+      "banco": "Aluguel",
+      "valor": 1350,
+      "tipo": "avista",
+      "vlrP": 1350,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 18,
+      "titular": "Fernanda",
+      "banco": "Havan",
+      "valor": 1393.84,
+      "tipo": "avista",
+      "vlrP": 1064.29,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 19,
+      "titular": "Felipe",
+      "banco": "Renner",
+      "valor": 1842.31,
+      "tipo": "avista",
+      "vlrP": 712.76,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 20,
+      "titular": "Felipe",
+      "banco": "Magalu (Recovery)",
+      "valor": 1729.88,
+      "tipo": "avista",
+      "vlrP": 411.35,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 21,
+      "titular": "Felipe",
+      "banco": "B. Brasil (Ativos)",
+      "valor": 2002.5,
+      "tipo": "parcelado",
+      "vlrP": 300,
+      "qtd": 7,
+      "status": "pendente"
+    },
+    {
+      "id": 22,
+      "titular": "Fernanda",
+      "banco": "Nubank",
+      "valor": 2807.18,
+      "tipo": "avista",
+      "vlrP": 1473.86,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 23,
+      "titular": "Felipe",
+      "banco": "Neon",
+      "valor": 3103.18,
+      "tipo": "avista",
+      "vlrP": 471.37,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 24,
+      "titular": "Felipe",
+      "banco": "Estacio",
+      "valor": 4899.9,
+      "tipo": "avista",
+      "vlrP": 4378.28,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 25,
+      "titular": "Felipe",
+      "banco": "Havan",
+      "valor": 5311.02,
+      "tipo": "avista",
+      "vlrP": 765.49,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 26,
+      "titular": "Fernanda",
+      "banco": "Santander",
+      "valor": 8239.27,
+      "tipo": "avista",
+      "vlrP": 1472.72,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": 27,
+      "titular": "Felipe",
+      "banco": "Banco Pan (BTG)",
+      "valor": 52963.55,
+      "tipo": "avista",
+      "vlrP": 8956.14,
+      "qtd": 1,
+      "status": "pendente"
+    },
+    {
+      "id": "17737737547243078",
+      "titular": "Felipe",
+      "banco": "Omni",
+      "valor": "29.000,00",
+      "tipo": "parcelado",
+      "vlrP": "330,00",
+      "qtd": 22,
+      "status": "andamento",
+      "entrada": "400,00",
+      "parcelasPagas": 3,
+      "vencimento": 10
+    }
+  ],
+  "transactions": [],
+  "tasks": [
+    {
+      "error": "Resource not found",
+      "status": "testing",
+      "completed": false,
+      "id": "17737799956746173"
+    },
+    {
+      "error": "Resource not found",
+      "id": "17737799980001375",
+      "status": "in-progress",
+      "completed": false
+    },
+    {
+      "error": "Resource not found",
+      "id": "17737799980276010",
+      "status": "review",
+      "completed": false
+    },
+    {
+      "title": "tim",
+      "date": "2026-03-17",
+      "description": "",
+      "status": "todo",
+      "priority": "normal",
+      "completed": false,
+      "id": "17737800148302131"
+    },
+    {
+      "title": "Contrato Omni: Parcela 1/22",
+      "date": "2026-05-10",
+      "description": "Pagamento da parcela 1 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212309809724"
+    },
+    {
+      "title": "Contrato Omni: Parcela 2/22",
+      "date": "2026-06-10",
+      "description": "Pagamento da parcela 2 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212310450718"
+    },
+    {
+      "title": "Contrato Omni: Parcela 3/22",
+      "date": "2026-07-10",
+      "description": "Pagamento da parcela 3 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212310788367"
+    },
+    {
+      "title": "Contrato Omni: Parcela 4/22",
+      "date": "2026-08-10",
+      "description": "Pagamento da parcela 4 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212311112955"
+    },
+    {
+      "title": "Contrato Omni: Parcela 5/22",
+      "date": "2026-09-10",
+      "description": "Pagamento da parcela 5 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212311448144"
+    },
+    {
+      "title": "Contrato Omni: Parcela 6/22",
+      "date": "2026-10-10",
+      "description": "Pagamento da parcela 6 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212311677445"
+    },
+    {
+      "title": "Contrato Omni: Parcela 7/22",
+      "date": "2026-11-10",
+      "description": "Pagamento da parcela 7 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212311949328"
+    },
+    {
+      "title": "Contrato Omni: Parcela 8/22",
+      "date": "2026-12-10",
+      "description": "Pagamento da parcela 8 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212312223468"
+    },
+    {
+      "title": "Contrato Omni: Parcela 9/22",
+      "date": "2027-01-10",
+      "description": "Pagamento da parcela 9 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212312499638"
+    },
+    {
+      "title": "Contrato Omni: Parcela 10/22",
+      "date": "2027-02-10",
+      "description": "Pagamento da parcela 10 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212312779314"
+    },
+    {
+      "title": "Contrato Omni: Parcela 11/22",
+      "date": "2027-03-10",
+      "description": "Pagamento da parcela 11 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212313083303"
+    },
+    {
+      "title": "Contrato Omni: Parcela 12/22",
+      "date": "2027-04-10",
+      "description": "Pagamento da parcela 12 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212313403989"
+    },
+    {
+      "title": "Contrato Omni: Parcela 13/22",
+      "date": "2027-05-10",
+      "description": "Pagamento da parcela 13 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212313682091"
+    },
+    {
+      "title": "Contrato Omni: Parcela 14/22",
+      "date": "2027-06-10",
+      "description": "Pagamento da parcela 14 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212313901831"
+    },
+    {
+      "title": "Contrato Omni: Parcela 15/22",
+      "date": "2027-07-10",
+      "description": "Pagamento da parcela 15 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212314175678"
+    },
+    {
+      "title": "Contrato Omni: Parcela 16/22",
+      "date": "2027-08-10",
+      "description": "Pagamento da parcela 16 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212314615492"
+    },
+    {
+      "title": "Contrato Omni: Parcela 17/22",
+      "date": "2027-09-10",
+      "description": "Pagamento da parcela 17 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212314962120"
+    },
+    {
+      "title": "Contrato Omni: Parcela 18/22",
+      "date": "2027-10-10",
+      "description": "Pagamento da parcela 18 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212315290680"
+    },
+    {
+      "title": "Contrato Omni: Parcela 19/22",
+      "date": "2027-11-10",
+      "description": "Pagamento da parcela 19 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212315624132"
+    },
+    {
+      "title": "Contrato Omni: Parcela 20/22",
+      "date": "2027-12-10",
+      "description": "Pagamento da parcela 20 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212316011290"
+    },
+    {
+      "title": "Contrato Omni: Parcela 21/22",
+      "date": "2028-01-10",
+      "description": "Pagamento da parcela 21 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212316328702"
+    },
+    {
+      "title": "Contrato Omni: Parcela 22/22",
+      "date": "2028-02-10",
+      "description": "Pagamento da parcela 22 de 22 no valor de R$ 330.00 (Felipe)",
+      "completed": false,
+      "status": "todo",
+      "priority": "normal",
+      "referenceId": "17737737547243078",
+      "referenceType": "DEBT",
+      "id": "17793212316686918"
+    }
+  ],
+  "settings": {
+    "exchangeRate": 5.0116
+  },
+  "deliveries": [
+    {
+      "id": "17793211667019751",
+      "data": "2026-05-20",
+      "entrada": "20:48",
+      "saida": "20:49",
+      "km_inicial": 100197,
+      "km_final": 100297,
+      "ganhos": 206,
+      "gasolina": 50,
+      "manutencao": 0,
+      "antecipacao": 0
+    }
+  ]
+}

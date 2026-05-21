@@ -1,0 +1,97 @@
+.deposit-form {
+    padding: 1.5rem;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.form-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #fff;
+    text-align: center;
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.form-group input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 0.75rem;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #0072ff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 12px;
+    border: none;
+    background: var(--accent-gradient);
+    color: #fff;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-top: 1rem;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(67, 233, 123, 0.4);
+}
+
+.objective-select {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.objective-select:focus {
+    border-color: #43e97b;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.objective-select option {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 10px;
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}

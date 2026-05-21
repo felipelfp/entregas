@@ -1,0 +1,285 @@
+.app-layout {
+    display: flex;
+    height: 100vh;
+    height: 100dvh;
+    width: 100%;
+    overflow: hidden;
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: 0; 
+    overflow: hidden;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    padding-top: calc(0.75rem + var(--safe-top, 0px));
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--glass-border);
+    flex-shrink: 0;
+    gap: 0.5rem;
+
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.page-title {
+    font-size: clamp(1rem, 3vw, 1.4rem);
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.hamburger-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 0.4rem;
+    border-radius: 8px;
+    transition: background 0.2s;
+    flex-shrink: 0;
+    line-height: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hamburger-btn:hover,
+.hamburger-btn:active {
+    background: var(--bg-secondary);
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.total-goal-badge {
+    background: rgba(25, 25, 35, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.total-goal-icon {
+    font-size: 1.3rem;
+}
+
+.total-goal-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.total-goal-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 600;
+}
+
+.total-goal-brl {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: white;
+    line-height: 1.2;
+}
+
+.total-goal-usd {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #3498db;
+}
+
+.exchange-rate-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    background: var(--glass-bg);
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+}
+
+.rate-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.rate-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #43e97b;
+}
+
+.rate-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.rate-input-small {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: #43e97b;
+    font-weight: 700;
+    width: 60px;
+    text-align: center;
+    font-size: 0.9rem;
+    padding: 0.2rem 0.3rem;
+}
+
+.rate-input-small:focus {
+    outline: none;
+    border-color: #43e97b;
+}
+
+.content-area {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0.75rem;
+    padding-bottom: calc(0.75rem + var(--safe-bottom, 0px));
+    -webkit-overflow-scrolling: touch;
+}
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 90;
+}
+
+@media (max-width: 768px) {
+    .top-bar {
+        padding: 0.6rem 0.75rem;
+        padding-top: calc(0.6rem + var(--safe-top, 0px));
+    }
+
+    .page-title {
+        max-width: 130px;
+        font-size: 1rem;
+    }
+
+    .total-goal-badge,
+    .exchange-rate-badge,
+    .header-controls .clock-container {
+        display: none !important;
+    }
+
+    .header-controls .task-notification-wrapper {
+        transform: scale(0.85);
+    }
+
+    .sidebar-overlay {
+        display: block; 
+    }
+
+    .content-area {
+        padding: 0.5rem;
+        padding-bottom: calc(0.75rem + var(--safe-bottom, 0px));
+    }
+}
+
+@media (min-width: 769px) {
+    .hamburger-btn {
+
+        display: none;
+    }
+
+    .top-bar {
+        padding: 1rem 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+        max-width: none;
+    }
+
+    .header-controls {
+        gap: 1rem;
+    }
+}
+
+.saldo-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    border-radius: 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.saldo-display-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.saldo-value {
+    display: block;
+    font-size: clamp(2rem, 8vw, 4rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.saldo-divider {
+    width: 1px;
+    height: 50px;
+    background: var(--border-color);
+}
+
+@media (max-width: 768px) {
+    .saldo-display-row {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    .saldo-divider {
+        width: 50px;
+        height: 1px;
+    }
+}

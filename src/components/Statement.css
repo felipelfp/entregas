@@ -1,0 +1,198 @@
+.statement-container {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 1rem 0.75rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.statement-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.statement-search-container {
+    position: relative;
+    margin-bottom: 0.8rem;
+}
+
+.statement-search-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    padding-right: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.8rem;
+    font-family: 'Outfit', sans-serif;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.statement-search-input::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.statement-search-input:focus {
+    outline: none;
+    border-color: rgba(102, 126, 234, 0.5);
+    background: rgba(102, 126, 234, 0.08);
+    box-shadow: 0 0 12px rgba(102, 126, 234, 0.15);
+}
+
+.statement-search-clear {
+    position: absolute;
+    right: 0.6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    padding: 0.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.statement-search-clear:hover {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+@media (max-width: 768px) {
+    .statement-container {
+        padding: 0.8rem 0.6rem;
+    }
+
+    .statement-title {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .statement-search-input {
+        font-size: 0.75rem;
+        padding: 0.45rem 0.6rem;
+        padding-right: 1.8rem;
+    }
+
+    .statement-search-clear {
+        font-size: 0.85rem;
+        right: 0.5rem;
+    }
+
+    .statement-search-container {
+        margin-bottom: 0.6rem;
+    }
+}
+
+.statement-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding-right: 0.5rem;
+}
+
+.empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100px;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+.transaction-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.8rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+}
+
+.transaction-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(2px);
+}
+
+.tx-left {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.tx-icon {
+    font-size: 1.2rem;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.5rem;
+    border-radius: 50%;
+}
+
+.tx-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.tx-bank {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.tx-date {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.tx-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.tx-values {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.tx-amount {
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.tx-amount.positive {
+    color: #4ade80;
+}
+
+.tx-usd {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+    padding: 0.4rem;
+    border-radius: 50%;
+}
+
+.delete-btn:hover {
+    opacity: 1;
+    background: rgba(255, 0, 0, 0.1);
+}

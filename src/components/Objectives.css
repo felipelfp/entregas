@@ -1,0 +1,410 @@
+.objectives-section {
+    margin-top: 1rem;
+    padding: 0 0.5rem;
+}
+
+.objectives-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 4rem;
+    text-align: center;
+    background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.03em;
+}
+
+.objectives-search-container {
+    position: relative;
+    max-width: 600px;
+    margin: 0 auto 3rem;
+}
+
+.objectives-search-input {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    padding-right: 3rem;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 32px;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
+    font-family: 'Outfit', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.objectives-search-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.objectives-search-input:focus {
+    outline: none;
+    border-color: rgba(102, 126, 234, 0.6);
+    background: rgba(102, 126, 234, 0.1);
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+}
+
+.objectives-search-clear {
+    position: absolute;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    padding: 0.25rem;
+}
+
+.objectives-search-clear:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.objectives-list {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: visible;
+    gap: 1rem;
+    width: 100%;
+    padding: 1rem 0.5rem 1.5rem;
+    align-items: stretch;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.objectives-list::-webkit-scrollbar {
+    display: none;
+}
+
+.highlight-value {
+    color: #fff;
+    font-weight: 700;
+}
+
+.highlight-value-usd {
+    color: #43e97b;
+    font-weight: 700;
+}
+
+.objective-card-add-trigger {
+    background: rgba(255, 255, 255, 0.01);
+    border: 2px dashed rgba(255, 255, 255, 0.08);
+    border-radius: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    min-height: 250px;
+    flex: 0 0 240px;
+    scroll-snap-align: start;
+}
+
+.objective-card-add-trigger:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: #3b82f6;
+    transform: translateY(-10px);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+}
+
+.add-plus-icon {
+    font-size: 3rem; 
+    color: rgba(255, 255, 255, 0.1);
+    transition: 0.4s;
+}
+
+.objective-card-add-trigger:hover .add-plus-icon {
+    color: #3b82f6;
+    transform: rotate(90deg) scale(1.1);
+}
+
+.add-text {
+    font-size: 0.9rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.2);
+    letter-spacing: 0.2em;
+}
+
+.objective-card-expanded {
+    background: linear-gradient(145deg, rgba(255, 59, 48, 0.12) 0%, rgba(255, 59, 48, 0.04) 100%);
+    border: 1px solid rgba(255, 59, 48, 0.25);
+    backdrop-filter: blur(25px);
+    border-radius: 28px;
+    padding: 1.1rem;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 250px;
+    flex: 0 0 240px;
+    scroll-snap-align: start;
+}
+
+.objective-card-expanded.completed {
+    background: linear-gradient(145deg, rgba(67, 233, 123, 0.12) 0%, rgba(67, 233, 123, 0.04) 100%);
+    border: 1px solid rgba(67, 233, 123, 0.25);
+}
+
+.objective-card-expanded:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+}
+
+.objective-card-expanded:not(.completed):hover {
+    border-color: rgba(255, 59, 48, 0.6);
+}
+
+.objective-card-expanded.completed:hover {
+    border-color: rgba(67, 233, 123, 0.6);
+}
+
+.card-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.objective-icon {
+    font-size: 2.5rem; 
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.4));
+}
+
+.card-title {
+    font-size: 1.1rem; 
+    font-weight: 800;
+    margin: 0;
+    color: #fff;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+}
+
+.status-badge {
+    font-size: 0.75rem;
+    color: #fff;
+    font-weight: 800;
+    padding: 0.5rem 1.2rem;
+    border-radius: 30px;
+    margin-top: 1rem;
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.objective-card-expanded:not(.completed) .status-badge {
+    background: rgba(255, 59, 48, 0.3);
+}
+
+.objective-card-expanded.completed .status-badge {
+    background: rgba(67, 233, 123, 0.3);
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    flex: 1;
+}
+
+.card-scheduler {
+    margin-top: 15px;
+    border-top: 1px dashed rgba(255,255,255,0.1);
+    padding-top: 15px;
+    display: flex;
+    justify-content: center;
+}
+
+.schedule-task-btn {
+    background: rgba(52, 152, 219, 0.2);
+    border: 1px solid #3498db;
+    color: #3498db;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+}
+
+.schedule-task-btn:hover {
+    background: #3498db;
+    color: white;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.8rem 1rem; 
+    border-radius: 12px;
+}
+
+.stat-row span {
+    font-size: 0.6rem; 
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+}
+
+.stat-row strong {
+    font-size: 0.95rem; 
+    color: #fff;
+}
+
+.card-actions-top {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+}
+
+.delete-obj-btn {
+    background: rgba(255, 59, 48, 0.15);
+    color: #ff3b30;
+    border: 1px solid rgba(255, 59, 48, 0.3);
+    width: 28px; 
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.delete-obj-btn:hover {
+    background: #ff3b30;
+    color: #fff;
+    transform: scale(1.1);
+}
+
+.complete-checkbox-compact {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: all 0.3s ease;
+}
+
+.complete-checkbox-compact:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.complete-checkbox-compact input {
+    width: 20px;
+    height: 20px;
+    accent-color: #43e97b;
+}
+
+.icon-input-premium {
+    background: rgba(0,0,0,0.5);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    width: 80px; 
+    height: 80px;
+    text-align: center;
+    font-size: 2.5rem;
+    color: #fff;
+    outline: none;
+}
+
+.name-input-premium {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid rgba(255,255,255,0.1);
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #fff;
+    text-align: center;
+    width: 90%;
+    outline: none;
+    padding: 8px 0;
+}
+
+.value-input-premium {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: right;
+    width: 120px;
+    outline: none;
+    padding: 8px 15px;
+}
+
+.add-card-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: auto;
+    padding-top: 2.5rem;
+}
+
+.cancel-add-btn {
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.5);
+    height: 54px;
+    border-radius: 18px;
+    font-weight: 800;
+    border: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer;
+}
+
+.confirm-add-btn-premium {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: #001f13;
+    height: 54px;
+    border: none;
+    border-radius: 18px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+@media (min-width: 600px) {
+    .objective-card-expanded { flex: 0 0 280px; min-height: 280px; }
+    .objective-card-add-trigger { flex: 0 0 280px; min-height: 280px; }
+}
+
+@media (max-width: 768px) {
+    .objectives-title { font-size: 1.6rem; margin-bottom: 1.5rem; }
+    .objectives-search-container { margin-bottom: 1.5rem; }
+    .objective-icon { font-size: 2rem; }
+    .card-title { font-size: 1rem; }
+}

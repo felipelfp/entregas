@@ -1,0 +1,311 @@
+.sidebar {
+    width: 72px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 0.5rem;
+    transition: width 0.3s ease;
+    z-index: 100;
+    background: rgba(15, 15, 19, 0.5);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.sidebar:hover {
+    width: 240px;
+}
+
+.sidebar-logo {
+    margin-bottom: 1.5rem;
+}
+
+.logo-icon {
+    font-size: 1.8rem;
+}
+
+.sidebar-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 0.25rem;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+    width: 2px;
+}
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.65rem 0.75rem;
+    background: transparent;
+    border: none;
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-align: left;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.nav-item.active {
+    background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(0, 114, 255, 0.3);
+}
+
+.nav-icon {
+    font-size: 1.3rem;
+    min-width: 22px;
+    display: flex;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.nav-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateX(-8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    white-space: nowrap;
+}
+
+.sidebar:hover .nav-label {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0 0.25rem;
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.65rem 0.75rem;
+    background: rgba(255, 71, 87, 0.1);
+    border: 1px solid rgba(255, 71, 87, 0.2);
+    border-radius: 12px;
+    color: #ff4757;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    font-family: 'Inter', sans-serif;
+}
+
+.logout-btn:hover {
+    background: rgba(255, 71, 87, 0.2);
+}
+
+.sidebar:not(:hover) .logout-btn {
+    justify-content: center;
+    padding: 0.65rem 0;
+}
+
+.sidebar:not(:hover) .logout-btn .nav-label {
+    display: none;
+}
+
+.theme-toggle-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    color: var(--text-primary);
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: rotate(15deg);
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    position: relative;
+    margin-bottom: 1.5rem;
+    padding: 0 0.5rem;
+}
+
+.close-sidebar-btn {
+    display: none;
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 0.4rem;
+    border-radius: 8px;
+    line-height: 1;
+    transition: background 0.2s;
+}
+
+.close-sidebar-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.install-app-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, rgba(0, 198, 255, 0.15), rgba(0, 114, 255, 0.15));
+    border: 1px solid rgba(0, 198, 255, 0.35);
+    border-radius: 12px;
+    color: #00c6ff;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    position: relative;
+    animation: installPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes installPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0, 198, 255, 0); }
+    50%       { box-shadow: 0 0 0 5px rgba(0, 198, 255, 0.12); }
+}
+
+.install-app-btn:hover {
+    background: linear-gradient(135deg, rgba(0, 198, 255, 0.28), rgba(0, 114, 255, 0.28));
+    border-color: rgba(0, 198, 255, 0.6);
+    transform: translateY(-1px);
+    animation: none;
+}
+
+.install-app-btn.install-success {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15));
+    border-color: rgba(16, 185, 129, 0.35);
+    color: #10b981;
+    animation: none;
+}
+
+.install-app-btn.install-hint {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.15));
+    border-color: rgba(245, 158, 11, 0.35);
+    color: #f59e0b;
+    animation: none;
+}
+
+.sidebar:not(:hover) .install-app-btn {
+    justify-content: center;
+    padding: 0.75rem 0;
+}
+
+.sidebar:not(:hover) .install-app-btn .nav-label {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        height: 100dvh;
+        width: 280px;
+        padding: 1.5rem 0.75rem;
+        padding-top: calc(1.5rem + var(--safe-top, 0px));
+        padding-bottom: calc(1rem + var(--safe-bottom, 0px));
+        margin: 0;
+        border-radius: 0;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        background: rgba(10, 10, 18, 0.97);
+        backdrop-filter: blur(30px);
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        z-index: 200;
+    }
+
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    .nav-label {
+        opacity: 1 !important;
+        transform: translateX(0) !important;
+    }
+
+    .sidebar-header {
+        justify-content: space-between;
+        padding: 0 0.25rem;
+    }
+
+    .close-sidebar-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: static;
+    }
+
+    .nav-item {
+        justify-content: flex-start;
+        padding: 0.85rem 0.75rem;
+        font-size: 1rem;
+    }
+
+    .nav-icon {
+        font-size: 1.4rem;
+    }
+
+    .sidebar:not(:hover) .logout-btn {
+        justify-content: flex-start;
+        padding: 0.85rem 0.75rem;
+    }
+    .sidebar:not(:hover) .logout-btn .nav-label {
+        display: inline;
+    }
+
+    .sidebar:not(:hover) .install-app-btn {
+        justify-content: flex-start;
+        padding: 0.85rem 0.75rem;
+    }
+    .sidebar:not(:hover) .install-app-btn .nav-label {
+        display: inline;
+    }
+}
