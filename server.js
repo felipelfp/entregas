@@ -2,23 +2,43 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const DB_FILE = process.env.DB_PATH || path.join(__dirname, 'db.json');
+let DB_FILE = process.env.DB_PATH || path.join(__dirname, 'db.json');
 const DIST_DIR = path.join(__dirname, 'dist');
 
 const dbDir = path.dirname(DB_FILE);
-if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
+try {
+    if (!fs.existsSync(dbDir)) {
+        fs.mkdirSync(dbDir, { recursive: true });
+    }
+} catch (e) {
+    console.warn("⚠️ Sem permissao para criar pasta do banco. Usando caminho local padrao.");
+    DB_FILE = path.join(__dirname, 'db.json');
 }
 
 if (!fs.existsSync(DB_FILE)) {
-    fs.writeFileSync(DB_FILE, JSON.stringify({
-        objectives: [],
-        debts: [],
-        transactions: [],
-        tasks: [],
-        deliveries: [],
-        settings: { exchangeRate: 5.0 }
-    }, null, 2));
+    try {
+        fs.writeFileSync(DB_FILE, JSON.stringify({
+            objectives: [],
+            debts: [],
+            transactions: [],
+            tasks: [],
+            deliveries: [],
+            settings: { exchangeRate: 5.0 }
+        }, null, 2));
+    } catch (e) {
+        console.warn("⚠️ Falha ao criar db.json no caminho customizado. Usando local.");
+        DB_FILE = path.join(__dirname, 'db.json');
+        if (!fs.existsSync(DB_FILE)) {
+            fs.writeFileSync(DB_FILE, JSON.stringify({
+                objectives: [],
+                debts: [],
+                transactions: [],
+                tasks: [],
+                deliveries: [],
+                settings: { exchangeRate: 5.0 }
+            }, null, 2));
+        }
+    }
 }
 const readDB = () => {
     const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
