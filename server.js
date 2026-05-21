@@ -2,7 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const DB_FILE = path.join(__dirname, 'db.json');
+const DB_FILE = process.env.DB_PATH || path.join(__dirname, 'db.json');
 const DIST_DIR = path.join(__dirname, 'dist');
 
 if (!fs.existsSync(DB_FILE)) {
