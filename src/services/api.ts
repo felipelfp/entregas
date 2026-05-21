@@ -77,12 +77,15 @@ export const api = {
             }
             const data = await response.json();
             const local = getLocal('objectives') || [];
-            setLocal('objectives', [...local, data]);
+            const exists = local.some((o: any) => o.id === data.id);
+            const updatedLocal = exists ? local.map((o: any) => o.id === data.id ? data : o) : [...local, data];
+            setLocal('objectives', updatedLocal);
             return data;
         } catch (err) {
             const local = getLocal('objectives') || [];
-            const updated = [...local, objective];
-            setLocal('objectives', updated);
+            const exists = local.some((o: any) => o.id === objective.id);
+            const updatedLocal = exists ? local.map((o: any) => o.id === objective.id ? objective : o) : [...local, objective];
+            setLocal('objectives', updatedLocal);
             return objective;
         }
     },
@@ -123,12 +126,16 @@ export const api = {
             });
             const data = await response.json();
             const local = getLocal('transactions') || [];
-            setLocal('transactions', [data, ...local]);
+            const exists = local.some((t: any) => t.id === data.id);
+            const updatedLocal = exists ? local.map((t: any) => t.id === data.id ? data : t) : [data, ...local];
+            setLocal('transactions', updatedLocal);
             return data;
         } catch {
             const local = getLocal('transactions') || [];
             const mockData = { ...transaction, id: Date.now() };
-            setLocal('transactions', [mockData, ...local]);
+            const exists = local.some((t: any) => t.id === mockData.id);
+            const updatedLocal = exists ? local.map((t: any) => t.id === mockData.id ? mockData : t) : [mockData, ...local];
+            setLocal('transactions', updatedLocal);
             return mockData;
         }
     },
@@ -172,12 +179,16 @@ export const api = {
             });
             const data = await response.json();
             const local = getLocal('debts') || [];
-            setLocal('debts', [...local, data]);
+            const exists = local.some((d: any) => d.id === data.id);
+            const updatedLocal = exists ? local.map((d: any) => d.id === data.id ? data : d) : [...local, data];
+            setLocal('debts', updatedLocal);
             return data;
         } catch {
             const local = getLocal('debts') || [];
             const mockData = { ...debt, id: Date.now() };
-            setLocal('debts', [...local, mockData]);
+            const exists = local.some((d: any) => d.id === mockData.id);
+            const updatedLocal = exists ? local.map((d: any) => d.id === mockData.id ? mockData : d) : [...local, mockData];
+            setLocal('debts', updatedLocal);
             return mockData;
         }
     },
@@ -249,12 +260,16 @@ export const api = {
             });
             const data = await response.json();
             const local = getLocal('tasks') || [];
-            setLocal('tasks', [...local, data]);
+            const exists = local.some((t: any) => t.id === data.id);
+            const updatedLocal = exists ? local.map((t: any) => t.id === data.id ? data : t) : [...local, data];
+            setLocal('tasks', updatedLocal);
             return data;
         } catch {
             const local = getLocal('tasks') || [];
             const mockData = { ...task, id: Date.now().toString() };
-            setLocal('tasks', [...local, mockData]);
+            const exists = local.some((t: any) => t.id === mockData.id);
+            const updatedLocal = exists ? local.map((t: any) => t.id === mockData.id ? mockData : t) : [...local, mockData];
+            setLocal('tasks', updatedLocal);
             return mockData;
         }
     },

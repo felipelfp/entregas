@@ -62,7 +62,7 @@ const AppContent: React.FC = () => {
     const [activeSection, setActiveSection] = useState('dashboard');
     const [exchangeRate, setExchangeRate] = useState(5.00);
     const [transactions, setTransactions] = useState<Deposit[]>([]);
-    const [objectives, setObjectives] = useState<Objective[]>([]);
+    const [objectives, setObjectives] = useState<Objective[]>(initialObjectives);
     const [debts, setDebts] = useState<any[]>(initialDebts);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [deliveryStats, setDeliveryStats] = useState({ profit: 0, totalProfitAllTime: 0, km: 0, gasolina: 0, manutencao: 0, ganhosBrutos: 0 });
@@ -126,11 +126,39 @@ const AppContent: React.FC = () => {
 
             const objs = await api.getObjectives();
             if (Array.isArray(objs)) {
-                setObjectives(objs);
+                if (objs.length === 0) {
+                    for (const o of initialObjectives) {
+                        await api.saveObjective(o);
+                    }
+                    setObjectives(initialObjectives);
+                } else {
+                    setObjectives(prev => {
+                        const base = prev && prev.length > 0 ? prev : initialObjectives;
+                        const combined = [...base];
+                        objs.forEach((apiObj: Objective) => {
+                            const index = combined.findIndex(o => o.id === apiObj.id);
+                            if (index !== -1) {
+                                combined[index] = { ...combined[index], ...apiObj };
+                            } else {
+                                combined.push(apiObj);
+                            }
+                        });
+                        return combined;
+                    });
+                }
             }
 
             const dbts = await api.getDebts();
-            if (Array.isArray(dbts)) setDebts(dbts);
+            if (Array.isArray(dbts)) {
+                if (dbts.length === 0) {
+                    for (const d of initialDebts) {
+                        await api.addDebt(d);
+                    }
+                    setDebts(initialDebts);
+                } else {
+                    setDebts(dbts);
+                }
+            }
 
             const tsks = await api.getTasks();
             if (Array.isArray(tsks)) setTasks(tsks);

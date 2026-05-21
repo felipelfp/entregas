@@ -338,7 +338,7 @@ const PremiumDashboard: React.FC<any> = ({ debts = [], tasks = [], onAdd, onUpda
                                         )}
 
                                         <div className="premium-eco-label">
-                                             Total: {fmt.format(parseBRLValue(d.vlrP) * (parseInt(d.qtd) || 1) + (d.tipo === 'parcelado' ? parseBRLValue(d.entrada) : 0))} | Eco: {fmt.format(parseBRLValue(d.valor) - ((parseBRLValue(d.vlrP) * (parseInt(d.qtd) || 1)) + (d.tipo === 'parcelado' ? parseBRLValue(d.entrada) : 0)))}
+                                             Total: {formatCurrencyBRL(parseBRLValue(d.vlrP) * (parseInt(d.qtd) || 1) + (d.tipo === 'parcelado' ? parseBRLValue(d.entrada) : 0))} | Eco: {formatCurrencyBRL(parseBRLValue(d.valor) - ((parseBRLValue(d.vlrP) * (parseInt(d.qtd) || 1)) + (d.tipo === 'parcelado' ? parseBRLValue(d.entrada) : 0)))}
                                         </div>
 
                                         <div className="premium-form-row" style={{alignItems: 'center', marginTop: '5px'}}>
@@ -391,8 +391,8 @@ const PremiumDashboard: React.FC<any> = ({ debts = [], tasks = [], onAdd, onUpda
                                 {listaFiltrada.map((d, i) => d && (
                                     <tr key={d.id || `r-${i}`}>
                                         <td style={{fontWeight: 600}}>{d.banco}</td>
-                                        <td>{fmt.format(parseBRLValue(d.valor))}</td>
-                                        <td style={{color: 'var(--premium-warning)'}}>{fmt.format(parseBRLValue(d.vlrP) * (d.qtd || 1) + (d.tipo === 'parcelado' ? parseBRLValue(d.entrada) : 0))}</td>
+                                        <td>{formatCurrencyBRL(parseBRLValue(d.valor))}</td>
+                                        <td style={{color: 'var(--premium-warning)'}}>{formatCurrencyBRL(parseBRLValue(d.vlrP) * (d.qtd || 1) + (d.tipo === 'parcelado' ? parseBRLValue(d.entrada) : 0))}</td>
                                         <td>
                                             <span style={{color: '#10b981', fontWeight: 'bold'}}>{getPaidCount(d)}</span> / {d.qtd || 1}
                                         </td>
@@ -406,10 +406,10 @@ const PremiumDashboard: React.FC<any> = ({ debts = [], tasks = [], onAdd, onUpda
                             <tfoot className="premium-report-tfoot">
                                 <tr>
                                     <td style={{fontWeight: 800, color: 'white'}}>TOTAIS FILTRADOS</td>
-                                    <td style={{fontWeight: 800, color: 'var(--premium-accent)'}}>{fmt.format(totals.orig)}</td>
-                                    <td style={{fontWeight: 800, color: 'var(--premium-warning)'}}>{fmt.format(totals.prop)}</td>
+                                    <td style={{fontWeight: 800, color: 'var(--premium-accent)'}}>{formatCurrencyBRL(totals.orig)}</td>
+                                    <td style={{fontWeight: 800, color: 'var(--premium-warning)'}}>{formatCurrencyBRL(totals.prop)}</td>
                                     <td style={{fontWeight: 800, color: 'var(--premium-success)'}}>
-                                        Economia: {fmt.format(totals.eco)}
+                                        Economia: {formatCurrencyBRL(totals.eco)}
                                     </td>
                                     {onScheduleTask && <td></td>}
                                 </tr>
