@@ -163,7 +163,7 @@ const server = http.createServer((req, res) => {
                     if (km > 0) totalKm += km;
                 });
                 const profit = totalGanhos - (totalGasolina + totalManutencao + totalAntecipacao);
-                const totalProfitAllTime = totalGanhos - totalGasolina;
+                const totalProfitAllTime = totalGanhos - (totalGasolina + totalManutencao + totalAntecipacao);
                 res.writeHead(200);
                 res.end(JSON.stringify({ profit, totalProfitAllTime, km: totalKm, gasolina: totalGasolina, manutencao: totalManutencao, ganhosBrutos: totalGanhos }));
                 return;

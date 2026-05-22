@@ -281,19 +281,21 @@ const FinancialOverview: React.FC<FinancialOverviewProps> = ({
                 <div className="financial-summary-sidebar">
                     <div className="summary-card-sidebar income">
                         <span className="sidebar-label">Renda Total</span>
-                        <div className="sidebar-value" style={{color: '#10b981'}}>{formatBRL(totalReceitas)}</div>
+                        <div className="sidebar-value" style={{color: '#10b981'}}>R$ {formatBRL(totalReceitas)}</div>
                     </div>
                     <div className="summary-card-sidebar total">
                         <span className="sidebar-label">Total Necessário</span>
-                        <div className="sidebar-value" style={{color: '#3b82f6'}}>{formatBRL(totalDespesas)}</div>
+                        <div className="sidebar-value" style={{color: '#3b82f6'}}>R$ {formatBRL(totalDespesas)}</div>
                     </div>
                     <div className="summary-card-sidebar daily-target" style={{ borderLeft: '4px solid #f59e0b', background: 'rgba(245, 158, 11, 0.05)' }}>
                         <span className="sidebar-label">Meta Diária (30 dias)</span>
-                        <div className="sidebar-value" style={{color: '#f59e0b'}}>{formatBRL(totalDespesas / 30)}</div>
+                        <div className="sidebar-value" style={{color: '#f59e0b'}}>R$ {formatBRL(totalDespesas / 30)}</div>
                     </div>
                     <div className={`summary-card-sidebar ${gap > 0 ? 'deficit' : 'surplus'}`}>
-                        <span className="sidebar-label">{gap > 0 ? 'Déficit Renda Extra' : 'Sobra Aberta'}</span>
-                        <div className="sidebar-value" style={{color: gap > 0 ? '#ef4444' : '#10b981'}}>{formatBRL(Math.abs(gap))}</div>
+                        <span className="sidebar-label">{gap > 0 ? 'Ficou Negativo em' : 'Sobra Aberta'}</span>
+                        <div className="sidebar-value" style={{color: gap > 0 ? '#ef4444' : '#10b981'}}>
+                            {gap > 0 ? `- R$ ${formatBRL(Math.abs(gap))}` : `+ R$ ${formatBRL(Math.abs(gap))}`}
+                        </div>
                     </div>
 
                     <div className="financial-actions-sidebar">

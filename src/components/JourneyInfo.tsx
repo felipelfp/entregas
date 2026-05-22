@@ -55,9 +55,10 @@ interface JourneyInfoProps {
     targetUSD: number;
     objectives: Objective[];
     transactions: Deposit[];
+    debts?: any[];
 }
 
-const JourneyInfo: React.FC<JourneyInfoProps> = ({ exchangeRate, accumulatedBRL, targetBRL, targetUSD, objectives, transactions }) => {
+const JourneyInfo: React.FC<JourneyInfoProps> = ({ exchangeRate, accumulatedBRL, targetBRL, targetUSD, objectives, transactions, debts = [] }) => {
     const formatBRL = (val: number) => {
         try {
             return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
@@ -84,46 +85,52 @@ const JourneyInfo: React.FC<JourneyInfoProps> = ({ exchangeRate, accumulatedBRL,
         return () => clearInterval(timer);
     }, []);
 
+    const parseBRLValue = (value: any): number => {
+        if (typeof value === 'number') return value;
+        if (!value) return 0;
+        const s = String(value).trim();
+        if (s.includes(',')) {
+            const clean = s.replace(/\./g, '').replace(',', '.');
+            return parseFloat(clean) || 0;
+        }
+        return parseFloat(s) || 0;
+    };
+
+    const totalRemainingDebtsBRL = Array.isArray(debts)
+        ? debts.filter(d => d.status !== 'quitado').reduce((sum, d) => {
+            const vP = parseBRLValue(d.vlrP) || 0;
+            const qT = parseInt(d.qtd) || 1;
+            const qP = parseInt(d.parcelasPagas) || 0;
+            const qRem = Math.max(0, qT - qP);
+            const ent = (qP === 0) ? (parseBRLValue(d.entrada) || 0) : 0;
+            return sum + (vP * qRem) + ent;
+        }, 0)
+        : 0;
+
+    const totalConquestBRL = Math.max(0, targetBRL - totalRemainingDebtsBRL);
+    const debtPercent = targetBRL > 0 ? (totalRemainingDebtsBRL / targetBRL) * 100 : 0;
+    const conquestPercent = targetBRL > 0 ? (totalConquestBRL / targetBRL) * 100 : 0;
+
     const metaPorMesBRL = targetBRL / 100; 
     const metaPorDiaBRL = targetBRL / 3000;
 
     const metaPorMesUSD = targetUSD / 100;
     const metaPorDiaUSD = targetUSD / 3000;
 
-    let daysPassed = 0;
-    let startDate = new Date();
+    // Data de início fixa: 22/05/2026
+    const START_DATE = new Date(2026, 4, 22); // mês 4 = maio (0-indexed)
+    const END_DATE = new Date(2029, 11, 31);  // 31/12/2029
 
-    if (transactions && transactions.length > 0) {
-        const sortedDates = [...transactions]
-            .map(t => new Date(t.date).getTime())
-            .filter(t => !isNaN(t))
-            .sort((a, b) => a - b);
-        if (sortedDates.length > 0) {
-            const firstDate = sortedDates[0];
-            startDate = new Date(firstDate);
-            daysPassed = Math.max(1, Math.ceil((currentDate.getTime() - firstDate) / (1000 * 60 * 60 * 24)));
-        } else {
-            daysPassed = 1;
-        }
-    } else {
-        const savedStartDate = localStorage.getItem('journeyStartDate');
-        if (savedStartDate && savedStartDate !== "Invalid Date") {
-            startDate = new Date(savedStartDate);
-            if (isNaN(startDate.getTime())) {
-                startDate = new Date();
-                localStorage.setItem('journeyStartDate', startDate.toISOString());
-            }
-            daysPassed = Math.max(1, Math.ceil((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
-        } else {
-            startDate = new Date();
-            localStorage.setItem('journeyStartDate', startDate.toISOString());
-            daysPassed = 1;
-        }
-    }
+    const totalDaysJourney = Math.ceil((END_DATE.getTime() - START_DATE.getTime()) / (1000 * 60 * 60 * 24));
+    const daysPassed = Math.max(0, Math.ceil((currentDate.getTime() - START_DATE.getTime()) / (1000 * 60 * 60 * 24)));
+    const daysRemaining = Math.max(0, Math.ceil((END_DATE.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24)));
+    const journeyPercent = Math.min(100, (daysPassed / totalDaysJourney) * 100);
 
-    if (isNaN(daysPassed)) daysPassed = 1;
-    const currentMonth = Math.ceil(daysPassed / 30);
-    const daysInCurrentMonth = ((daysPassed - 1) % 30) + 1;
+    const monthsPassed = Math.floor(daysPassed / 30);
+    const daysInCurrentMonth = (daysPassed % 30) + 1;
+    const monthsRemaining = Math.ceil(daysRemaining / 30);
+
+    const startDate = START_DATE;
 
     const monthlyContribution = 2000;
     const projectedTotal = accumulatedBRL + (simMonths * monthlyContribution);
@@ -145,10 +152,17 @@ const JourneyInfo: React.FC<JourneyInfoProps> = ({ exchangeRate, accumulatedBRL,
                             <div className="meta-stat-item">
                                 <span className="stat-label">⏳ Jornada</span>
                                 <span className="stat-value">
-                                    Mês {currentMonth} de 100 • Dia {daysInCurrentMonth}
+                                    {monthsPassed}m {daysInCurrentMonth}d passados
                                 </span>
                                 <span style={{fontSize: '0.7em', color: 'rgba(255,255,255,0.5)'}}>
-                                    ({daysPassed} dias acumulados)
+                                    {daysPassed} dias desde 22/05/2026
+                                </span>
+                                {/* Barra de progresso da jornada */}
+                                <div style={{background: 'rgba(255,255,255,0.1)', borderRadius: '4px', height: '4px', marginTop: '6px', overflow: 'hidden'}}>
+                                    <div style={{width: `${journeyPercent}%`, height: '100%', background: '#3b82f6', borderRadius: '4px', transition: 'width 0.5s'}} />
+                                </div>
+                                <span style={{fontSize: '0.65em', color: '#3b82f6', marginTop: '3px', display: 'block'}}>
+                                    {journeyPercent.toFixed(1)}% — Faltam {daysRemaining} dias ({monthsRemaining} meses) até dez/2029
                                 </span>
                             </div>
                             <div className="meta-stat-item">
@@ -169,55 +183,62 @@ const JourneyInfo: React.FC<JourneyInfoProps> = ({ exchangeRate, accumulatedBRL,
                                 <span className="stat-value" style={{color: '#3498db'}}>{formatBRL(projectedTotal)}</span>
                             </div>
                         </div>
-
-                         <div className="simulation-controls" style={{marginTop: '20px'}}>
-                            <input 
-                                type="range" 
-                                min="0" max="60" 
-                                value={simMonths} 
-                                onChange={(e) => setSimMonths(parseInt(e.target.value))}
-                                style={{width: '100%', accentColor: '#FFD700'}} 
-                            />
-                            <p style={{fontSize: '0.8em', marginTop: '5px', opacity: 0.8, textAlign: 'center'}}>
-                                Arraste para simular aporte mensal de R$ 2.000,00
-                            </p>
-                        </div>
-
-                        <div style={{marginTop: '15px', padding: '10px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.05)', fontSize: '0.8em', textAlign: 'center', opacity: 0.7}}>
-                            <p>
-                                📅 Data de Início da Jornada: {(() => {
-                                    try {
-                                        return startDate.toLocaleDateString('pt-BR');
-                                    } catch {
-                                        return new Date().toLocaleDateString('pt-BR');
-                                    }
-                                })()} ({(() => {
-                                    try {
-                                        return startDate.toLocaleDateString('pt-BR', {weekday: 'long'});
-                                    } catch {
-                                        return new Date().toLocaleDateString('pt-BR', {weekday: 'long'});
-                                    }
-                                })()})
-                            </p>
-                            <button 
-                                onClick={() => {
-                                    localStorage.removeItem('journeyStartDate');
-                                    setCurrentDate(new Date());
-                                    window.location.reload();
-                                }}
-                                style={{marginTop: '8px', padding: '5px 10px', fontSize: '0.75em', backgroundColor: '#ff6b6b', border: 'none', borderRadius: '4px', color: 'white', cursor: 'pointer'}}
-                            >
-                                🔄 Resetar Data
-                            </button>
-                        </div>
                     </div>
                 </div>
             </header>
 
+
             <div className="adventure-content">
-                <div className="info-card-original glass">
+                <div className="split-meta-container glass">
+                    <h3 className="split-title">🎯 Divisão da Meta: Dívida vs. Conquista</h3>
+                    
+                    <div className="split-progress-bar-container">
+                        <div className="split-progress-bar">
+                            <div 
+                                className="split-progress-fill debt" 
+                                style={{ width: `${debtPercent}%` }}
+                                title={`Dívida: ${debtPercent.toFixed(1)}%`}
+                            ></div>
+                            <div 
+                                className="split-progress-fill conquest" 
+                                style={{ width: `${conquestPercent}%` }}
+                                title={`Conquista: ${conquestPercent.toFixed(1)}%`}
+                            ></div>
+                        </div>
+                        <div className="split-legend">
+                            <span style={{color: '#ff7e5f'}}>🔴 Dívida: {debtPercent.toFixed(1)}%</span>
+                            <span style={{color: '#3b82f6'}}>🔵 Conquista: {conquestPercent.toFixed(1)}%</span>
+                        </div>
+                    </div>
+
+                    <div className="split-cards-grid">
+                        <div className="split-card debt-card">
+                            <div className="split-card-header">
+                                <span className="icon">🔴</span>
+                                <h4>Dívida (Foco de Quitação)</h4>
+                            </div>
+                            <div className="split-card-value">{formatBRL(totalRemainingDebtsBRL)}</div>
+                            <p className="split-card-desc">
+                                Valor restante negociado necessário para quitar todas as suas pendências financeiras ativas no sistema.
+                            </p>
+                        </div>
+
+                        <div className="split-card conquest-card">
+                            <div className="split-card-header">
+                                <span className="icon">🚀</span>
+                                <h4>Conquista (Futuro & Sonhos)</h4>
+                            </div>
+                            <div className="split-card-value">{formatBRL(totalConquestBRL)}</div>
+                            <p className="split-card-desc">
+                                Valor livre que você terá acumulado para investir, conquistar bens e garantir sua liberdade financeira ao bater a meta.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="info-card-original glass" style={{ marginTop: '20px' }}>
                     <p style={{textAlign: 'center', opacity: 0.8}}>
-                        Siga os aportes mensais para atingir a meta atualizada de {formatBRL(targetBRL)} em 100 meses.
+                        Ao economizar e manter seus ganhos diários, você quitará a totalidade da sua dívida e terá mais de <strong>{formatBRL(totalConquestBRL)}</strong> acumulados de forma livre!
                     </p>
                 </div>
             </div>

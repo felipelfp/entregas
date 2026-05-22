@@ -231,11 +231,13 @@ const AppContent: React.FC = () => {
     };
 
     const handleDeleteObjective = async (id: string) => {
+        if (!window.confirm("⚠️ Tem certeza que deseja excluir este objetivo?")) return;
         await api.deleteObjective(id);
         setObjectives(prev => prev.filter(o => o.id !== id));
     };
 
     const handleDeleteTransaction = async (id: number) => {
+        if (!window.confirm("⚠️ Tem certeza que deseja excluir esta transação?")) return;
         await api.deleteTransaction(id);
         setTransactions(prev => prev.filter(t => t.id !== id));
     };
@@ -345,14 +347,14 @@ const AppContent: React.FC = () => {
         return sum + (parseBRLValue(d.valor) || 0);
     }, 0);
     const originalObjSum = effectiveObjectives.reduce((sum, obj) => sum + (Number(obj.targetBRL) || 0), 0);
-    const originalTotalTargetBRL = originalAdjustedDebtSum + originalObjSum;
+    const originalTotalTargetBRL = 300000;
 
     const remainingAdjustedDebtSum = debts.filter(d => d.status !== 'quitado').reduce((sum, d) => {
         return sum + (parseBRLValue(d.valor) || 0);
     }, 0);
     const remainingObjSum = effectiveObjectives.filter(obj => !obj.completed).reduce((sum, obj) => sum + (Number(obj.targetBRL) || 0), 0);
 
-    const totalTargetBRL = remainingAdjustedDebtSum + remainingObjSum;
+    const totalTargetBRL = 300000;
     const totalTargetUSD = exchangeRate > 0 ? totalTargetBRL / exchangeRate : 0;
 
     const historicalDebtPaid = debts.filter(d => d.status === 'quitado').reduce((sum, d) => {
@@ -370,6 +372,17 @@ const AppContent: React.FC = () => {
     const progressBRL = cashDeposits + historicalDebtPaid + historicalObjDone + realizedExtraIncome;
 
     const progressPercent = originalTotalTargetBRL > 0 ? (progressBRL / originalTotalTargetBRL) * 100 : 0;
+
+    // Saldo mensal: receitas - despesas (para exibir no painel do header)
+    const rFernanda = parseBRLValue(financialOverview.rendaFixaFernanda || '1000');
+    const rExtraAtual = deliveryStats.profit || 0;
+    const dFixas = parseBRLValue(financialOverview.despesasFixas || '2129');
+    const mEstudos = parseBRLValue(financialOverview.mensalidadeEstudos || '490');
+    const mPoupanca = parseBRLValue(financialOverview.metaPoupanca || '3548.99');
+    const rEmergencia = parseBRLValue(financialOverview.reservaEmergencia || '500');
+    const totalRendaMensal = rFernanda + rExtraAtual;
+    const totalDespesasMensal = dFixas + mEstudos + mPoupanca + rEmergencia;
+    const saldoMensal = totalRendaMensal - totalDespesasMensal;
 
     const getDailyDeliveryTarget = () => {
         const dFixas = parseBRLValue(financialOverview.despesasFixas);
@@ -418,6 +431,7 @@ const AppContent: React.FC = () => {
                             accumulatedBRL={accumulatedBRL}
                             targetBRL={totalTargetBRL}
                             targetUSD={totalTargetUSD}
+                            debts={debts}
                         />
                     );
                 case 'br_goals':
@@ -588,7 +602,13 @@ const AppContent: React.FC = () => {
                                     <div style={{display: 'flex', flexDirection: 'column', gap: '3px'}}>
                                         <span className="total-goal-brl" style={{fontSize: '1rem'}}>Meta: R$ {formatBRLText(totalTargetBRL)}</span>
                                         <span className="total-goal-usd" style={{fontSize: '0.8rem', color: '#10b981', fontWeight: 800}}>Acumulado: R$ {formatBRLText(accumulatedBRL)}</span>
-                                        <span className="total-goal-usd" style={{fontSize: '0.7rem', color: '#3498db'}}>Pendente: R$ {formatBRLText(totalRemainingBRL)}</span>
+                                        <span className="total-goal-usd" style={{fontSize: '0.7rem', color: '#3498db'}}>Pendente: R$ {formatBRLText(totalTargetBRL - accumulatedBRL)}</span>
+                                        <span style={{fontSize: '0.7rem', fontWeight: 800, color: saldoMensal < 0 ? '#ef4444' : '#10b981'}}>
+                                            {saldoMensal < 0
+                                                ? `🔴 Negativo: - R$ ${formatBRLText(Math.abs(saldoMensal))}`
+                                                : `🟢 Mês OK: + R$ ${formatBRLText(saldoMensal)}`
+                                            }
+                                        </span>
                                     </div>
                                 </div>
                             </div>

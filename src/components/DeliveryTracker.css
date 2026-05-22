@@ -189,6 +189,7 @@
 .history-table tr:hover { background: rgba(59, 130, 246, 0.05); }
 
 .pos-val { color: #10b981; font-weight: 700; }
+.warn-val { color: #eab308; font-weight: 700; }
 .neg-val { color: #ef4444; font-weight: 700; }
 
 .delete-history-btn {

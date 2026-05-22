@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import './DeliveryTracker.css';
 
+const getLocalDateString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
 interface DeliveryTrackerProps {
     onRefresh?: () => void;
 }
@@ -10,7 +18,7 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
     const [history, setHistory] = useState<any[]>([]);
     const [today, setToday] = useState<any>({
         id: null,
-        data: new Date().toISOString().split('T')[0],
+        data: getLocalDateString(),
         entrada: '',
         saida: '',
         km_inicial: 0,
@@ -30,13 +38,31 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
             const hist = await api.getDeliveryHistory();
             setHistory(hist);
 
-            const todayStr = new Date().toISOString().split('T')[0];
-            const activeRecord = hist.find((r: any) => r.data === todayStr && (!r.saida || r.saida === ''));
+            const activeRecord = hist.find((r: any) => !r.saida || r.saida === '');
 
             if (activeRecord) {
+                const savedDraft = localStorage.getItem(`delivery_draft_${activeRecord.id}`);
+                if (savedDraft) {
+                    try {
+                        const parsedDraft = JSON.parse(savedDraft);
+                        if (parsedDraft.id === activeRecord.id) {
+                            setToday({ ...activeRecord, ...parsedDraft });
+                            setIsLoading(false);
+                            return;
+                        }
+                    } catch (e) {
+                        console.error("Erro ao carregar rascunho local:", e);
+                    }
+                }
                 setToday(activeRecord);
             } else {
-                startNewSession();
+                const todayStr = getLocalDateString();
+                const closedToday = hist.find((r: any) => r.data === todayStr && r.saida && r.saida !== '');
+                if (closedToday) {
+                    setToday(closedToday);
+                } else {
+                    startNewSession();
+                }
             }
         } catch (e) {
             console.error("Erro ao carregar entregas:", e);
@@ -45,9 +71,12 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
     };
 
     const startNewSession = () => {
+        if (today && today.id) {
+            localStorage.removeItem(`delivery_draft_${today.id}`);
+        }
         setToday({
             id: null,
-            data: new Date().toISOString().split('T')[0],
+            data: getLocalDateString(),
             entrada: '',
             saida: '',
             km_inicial: 0,
@@ -63,15 +92,25 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
         loadData();
     }, []);
 
-    const handleSave = async (updatedFields: any) => {
+    useEffect(() => {
+        if (today && today.id) {
+            localStorage.setItem(`delivery_draft_${today.id}`, JSON.stringify(today));
+        }
+    }, [today]);
+
+    const handleSave = async (updatedFields: any, silent: boolean = false) => {
         const recordToSave = { ...today, ...updatedFields };
         setToday(recordToSave);
-        const success = await api.saveDeliveryRecord(recordToSave);
-        if (success) {
-            await loadData();
-            if (onRefresh) onRefresh();
-        } else {
-            alert("❌ Erro ao salvar. Verifique a conexão com o servidor.");
+        if (recordToSave.id || updatedFields.entrada) {
+            const success = await api.saveDeliveryRecord(recordToSave);
+            if (success) {
+                await loadData();
+                if (onRefresh) onRefresh();
+            } else {
+                if (!silent) {
+                    alert("❌ Erro ao salvar. Verifique a conexão com o servidor.");
+                }
+            }
         }
     };
 
@@ -118,8 +157,14 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
         setToday((prev: any) => ({ ...prev, [field]: numValue }));
     };
 
+    const getLucroClass = (val: number) => {
+        if (val < 225) return "neg-val"; // red
+        if (val === 225) return "warn-val"; // yellow
+        return "pos-val"; // green
+    };
+
     const currentKmRodados = today.km_final > today.km_inicial ? today.km_final - today.km_inicial : 0;
-    const currentLucro = today.ganhos - (today.gasolina + today.manutencao + today.antecipacao);
+    const currentLucro = (Number(today.ganhos) || 0) - ((Number(today.gasolina) || 0) + (Number(today.manutencao) || 0) + (Number(today.antecipacao) || 0));
 
     const handleDeleteRecord = async (id: string) => {
         if (!window.confirm(`⚠️ Tem certeza que deseja remover este registro?`)) return;
@@ -182,6 +227,7 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
                                 placeholder="KM Inicial" 
                                 value={today.km_inicial || ''} 
                                 onChange={(e) => handleInputChange('km_inicial', e.target.value)}
+                                onBlur={() => handleSave({}, true)}
                             />
                         </div>
                         <div className="input-row">
@@ -190,6 +236,7 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
                                 placeholder="KM Final" 
                                 value={today.km_final || ''} 
                                 onChange={(e) => handleInputChange('km_final', e.target.value)}
+                                onBlur={() => handleSave({}, true)}
                             />
                             <button onClick={() => handleSave({})}>OK</button>
                         </div>
@@ -200,22 +247,53 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
                         <h3>💰 Ganhos e Custos</h3>
                         <div className="input-group-label">Ganhos</div>
                         <div className="input-row">
-                            <input type="number" placeholder="Ganhos R$" value={today.ganhos || ''} onChange={(e) => handleInputChange('ganhos', e.target.value)}/>
+                            <input type="number" placeholder="Ganhos R$" value={today.ganhos || ''} onChange={(e) => handleInputChange('ganhos', e.target.value)} onBlur={() => handleSave({}, true)}/>
                         </div>
                         <div className="input-group-label">Gasolina</div>
                         <div className="input-row">
-                            <input type="number" placeholder="Gasolina R$" value={today.gasolina || ''} onChange={(e) => handleInputChange('gasolina', e.target.value)}/>
+                            <input type="number" placeholder="Gasolina R$" value={today.gasolina || ''} onChange={(e) => handleInputChange('gasolina', e.target.value)} onBlur={() => handleSave({}, true)}/>
                         </div>
                         <div className="input-group-label">Manutenção</div>
                         <div className="input-row">
-                            <input type="number" placeholder="Manutenção R$" value={today.manutencao || ''} onChange={(e) => handleInputChange('manutencao', e.target.value)}/>
+                            <input type="number" placeholder="Manutenção R$" value={today.manutencao || ''} onChange={(e) => handleInputChange('manutencao', e.target.value)} onBlur={() => handleSave({}, true)}/>
                         </div>
                         <div className="input-group-label">Antecipação</div>
                         <div className="input-row">
-                            <input type="number" placeholder="Antecipação R$" value={today.antecipacao || ''} onChange={(e) => handleInputChange('antecipacao', e.target.value)}/>
+                            <input type="number" placeholder="Antecipação R$" value={today.antecipacao || ''} onChange={(e) => handleInputChange('antecipacao', e.target.value)} onBlur={() => handleSave({}, true)}/>
                         </div>
                         <button className="ponto-btn" onClick={() => handleSave({})} style={{background: '#3b82f6', color: 'white', width: '100%', marginTop: '1rem'}}>💾 Salvar Registros</button>
                     </div>
+
+                    {today.entrada && (
+                        <div className="control-card">
+                            <h3 style={{color: '#eab308'}}>🎯 Meta Diária (R$ 225,00)</h3>
+                            <div style={{display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '0.5rem'}}>
+                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                    <span style={{fontSize: '0.75rem', color: '#94a3b8'}}>Lucro Estimado:</span>
+                                    <span className={getLucroClass(currentLucro)} style={{fontSize: '0.95rem', fontFamily: 'JetBrains Mono, monospace'}}>
+                                        {formatBRL(currentLucro)}
+                                    </span>
+                                </div>
+                                <div style={{
+                                    fontSize: '0.75rem',
+                                    padding: '6px 10px',
+                                    borderRadius: '6px',
+                                    textAlign: 'center',
+                                    fontWeight: 'bold',
+                                    background: currentLucro < 225 ? 'rgba(239, 68, 68, 0.15)' : currentLucro === 225 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                                    color: currentLucro < 225 ? '#ef4444' : currentLucro === 225 ? '#f59e0b' : '#10b981',
+                                    border: currentLucro < 225 ? '1px solid rgba(239, 68, 68, 0.3)' : currentLucro === 225 ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid rgba(16, 185, 129, 0.3)'
+                                }}>
+                                    {currentLucro < 225 
+                                        ? `Faltam ${formatBRL(225 - currentLucro)} para bater a meta` 
+                                        : currentLucro === 225 
+                                            ? 'Meta atingida exatamente!' 
+                                            : `Meta superada em ${formatBRL(currentLucro - 225)}! 🚀`
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {}
@@ -223,20 +301,102 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
                     <div className="stats-bar">
                         <div className="stat-box">
                             <span className="stat-label">Km Total (Mês)</span>
-                            <span className="stat-value">{history.reduce((s, r) => s + (r.km_final - r.km_inicial > 0 ? r.km_final - r.km_inicial : 0), 0).toFixed(1)}</span>
+                            <span className="stat-value">{history.reduce((s, r) => s + (Number(r.km_final) - Number(r.km_inicial) > 0 ? Number(r.km_final) - Number(r.km_inicial) : 0), 0).toFixed(1)}</span>
                         </div>
                         <div className="stat-box">
                             <span className="stat-label">Ganhos (Mês)</span>
-                            <span className="stat-value" style={{color: '#10b981'}}>{formatBRL(history.reduce((s, r) => s + r.ganhos, 0))}</span>
+                            <span className="stat-value" style={{color: '#10b981'}}>{formatBRL(history.reduce((s, r) => s + (Number(r.ganhos) || 0), 0))}</span>
                         </div>
                         <div className="stat-box">
                             <span className="stat-label">Gastos (Mês)</span>
-                            <span className="stat-value" style={{color: '#ef4444'}}>{formatBRL(history.reduce((s, r) => s + r.gasolina + r.manutencao, 0))}</span>
+                            <span className="stat-value" style={{color: '#ef4444'}}>{formatBRL(history.reduce((s, r) => s + (Number(r.gasolina) || 0) + (Number(r.manutencao) || 0) + (Number(r.antecipacao) || 0), 0))}</span>
                         </div>
                         <div className="stat-box">
                             <span className="stat-label">Lucro Líquido</span>
-                            <span className="stat-value" style={{color: '#3b82f6'}}>{formatBRL(history.reduce((s, r) => s + (r.ganhos - (r.gasolina + r.manutencao + r.antecipacao)), 0))}</span>
+                            {(() => {
+                                const totalLucroMes = history.reduce((s, r) => {
+                                    const ganhos = Number(r.ganhos) || 0;
+                                    const gastos = (Number(r.gasolina) || 0) + (Number(r.manutencao) || 0) + (Number(r.antecipacao) || 0);
+                                    return s + (ganhos - gastos);
+                                }, 0);
+                                const diasTrabalhados = history.length;
+                                const metaDias = 225 * diasTrabalhados;
+                                const diff = totalLucroMes - metaDias;
+                                return (
+                                    <>
+                                        <span className="stat-value" style={{color: '#3b82f6'}}>{formatBRL(totalLucroMes)}</span>
+                                        {diasTrabalhados > 0 && (
+                                            <span style={{
+                                                fontSize: '0.65rem',
+                                                fontWeight: 800,
+                                                marginTop: '4px',
+                                                display: 'block',
+                                                color: diff < 0 ? '#ef4444' : diff === 0 ? '#eab308' : '#10b981'
+                                            }}>
+                                                {diff < 0
+                                                    ? `⬇ Faltou ${formatBRL(Math.abs(diff))} no mês`
+                                                    : diff === 0
+                                                        ? `✓ Meta do mês exata!`
+                                                        : `⬆ Passou ${formatBRL(diff)} no mês`
+                                                }
+                                            </span>
+                                        )}
+                                    </>
+                                );
+                            })()}
                         </div>
+
+                        {/* Card Meta do Mês */}
+                        {(() => {
+                            const META_MES = 225 * 30; // R$ 6.750,00
+                            const totalLucroMes = history.reduce((s, r) => {
+                                const ganhos = Number(r.ganhos) || 0;
+                                const gastos = (Number(r.gasolina) || 0) + (Number(r.manutencao) || 0) + (Number(r.antecipacao) || 0);
+                                return s + (ganhos - gastos);
+                            }, 0);
+                            const progresso = Math.min((totalLucroMes / META_MES) * 100, 100);
+                            const falta = META_MES - totalLucroMes;
+                            const passou = totalLucroMes - META_MES;
+                            const cor = totalLucroMes >= META_MES ? '#10b981' : totalLucroMes >= META_MES * 0.7 ? '#eab308' : '#ef4444';
+                            return (
+                                <div className="stat-box" style={{
+                                    background: 'rgba(59,130,246,0.07)',
+                                    border: '1px solid rgba(59,130,246,0.2)',
+                                    minWidth: '160px'
+                                }}>
+                                    <span className="stat-label" style={{color: '#3b82f6'}}>🎯 Meta do Mês</span>
+                                    <span className="stat-value" style={{color: '#ffffff', fontSize: '1rem'}}>{formatBRL(META_MES)}</span>
+                                    <span style={{fontSize: '0.65rem', color: '#94a3b8', display: 'block', marginTop: '2px'}}>
+                                        R$ 225 × 30 dias
+                                    </span>
+
+                                    {/* Barra de progresso */}
+                                    <div style={{
+                                        background: 'rgba(255,255,255,0.08)',
+                                        borderRadius: '4px',
+                                        height: '5px',
+                                        margin: '6px 0',
+                                        overflow: 'hidden'
+                                    }}>
+                                        <div style={{
+                                            width: `${progresso}%`,
+                                            height: '100%',
+                                            background: cor,
+                                            borderRadius: '4px',
+                                            transition: 'width 0.5s ease'
+                                        }} />
+                                    </div>
+
+                                    <span style={{fontSize: '0.65rem', fontWeight: 800, color: cor, display: 'block'}}>
+                                        {totalLucroMes >= META_MES
+                                            ? `✅ Passou ${formatBRL(passou)}!`
+                                            : `⬇ Falta ${formatBRL(falta)} (${progresso.toFixed(0)}%)`
+                                        }
+                                    </span>
+                                </div>
+                            );
+                        })()}
+
                     </div>
 
                     <div className="history-card">
@@ -272,7 +432,15 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
                                                 <td className="neg-val">{formatBRL(record.gasolina || 0)}</td>
                                                 <td className="neg-val">{formatBRL(record.manutencao || 0)}</td>
                                                 <td className="neg-val">{formatBRL(record.antecipacao || 0)}</td>
-                                                <td className={lucro >= 0 ? "pos-val" : "neg-val"}>{formatBRL(lucro)}</td>
+                                                <td className={getLucroClass(lucro)}>
+                                                    {formatBRL(lucro)}
+                                                    {(() => {
+                                                        const diff = lucro - 225;
+                                                        if (diff < 0) return <span style={{fontSize: '0.6rem', display: 'block', color: '#ef4444', fontWeight: 800}}>⬇ Faltou {formatBRL(Math.abs(diff))}</span>;
+                                                        if (diff === 0) return <span style={{fontSize: '0.6rem', display: 'block', color: '#eab308', fontWeight: 800}}>✓ Meta exata</span>;
+                                                        return <span style={{fontSize: '0.6rem', display: 'block', color: '#10b981', fontWeight: 800}}>⬆ Passou {formatBRL(diff)}</span>;
+                                                    })()}
+                                                </td>
                                                 <td style={{textAlign: 'center'}}>
                                                     <button 
                                                         className="delete-history-btn"
@@ -335,7 +503,15 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
                                         </div>
                                         <div className="card-footer-lucro">
                                             <span className="item-label">Lucro Líquido:</span>
-                                            <span className={`item-value ${lucro >= 0 ? "pos-val" : "neg-val"}`}>{formatBRL(lucro)}</span>
+                                            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
+                                                <span className={`item-value ${getLucroClass(lucro)}`}>{formatBRL(lucro)}</span>
+                                                {(() => {
+                                                    const diff = lucro - 225;
+                                                    if (diff < 0) return <span style={{fontSize: '0.65rem', color: '#ef4444', fontWeight: 800}}>⬇ Faltou {formatBRL(Math.abs(diff))}</span>;
+                                                    if (diff === 0) return <span style={{fontSize: '0.65rem', color: '#eab308', fontWeight: 800}}>✓ Meta exata</span>;
+                                                    return <span style={{fontSize: '0.65rem', color: '#10b981', fontWeight: 800}}>⬆ Passou {formatBRL(diff)}</span>;
+                                                })()}
+                                            </div>
                                         </div>
                                     </div>
                                 );
