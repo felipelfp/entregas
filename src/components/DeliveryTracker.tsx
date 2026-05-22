@@ -56,13 +56,7 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
                 }
                 setToday(activeRecord);
             } else {
-                const todayStr = getLocalDateString();
-                const closedToday = hist.find((r: any) => r.data === todayStr && r.saida && r.saida !== '');
-                if (closedToday) {
-                    setToday(closedToday);
-                } else {
-                    startNewSession();
-                }
+                startNewSession();
             }
         } catch (e) {
             console.error("Erro ao carregar entregas:", e);
