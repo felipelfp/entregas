@@ -30,6 +30,7 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
     });
     const [isLoading, setIsLoading] = useState(true);
     const [elapsedTime, setElapsedTime] = useState<string>('');
+    const [pendingPastShift, setPendingPastShift] = useState<any>(null);
     const lastNotifyTimeRef = useRef<string>('');
  
     const requestNotificationPermission = async () => {
@@ -91,7 +92,12 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
             const hist = await api.getDeliveryHistory();
             setHistory(hist);
 
-            const activeRecord = hist.find((r: any) => !r.saida || r.saida === '');
+            // 1. Identify if there's any active shift from a PAST day (unfinished)
+            const pastShift = hist.find((r: any) => (!r.saida || r.saida === '') && r.data !== getLocalDateString());
+            setPendingPastShift(pastShift || null);
+
+            // 2. Only look for today's active shift to bind to the main form
+            const activeRecord = hist.find((r: any) => (!r.saida || r.saida === '') && r.data === getLocalDateString());
 
             if (activeRecord) {
                 const savedDraft = localStorage.getItem(`delivery_draft_${activeRecord.id}`);
@@ -109,6 +115,20 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
                 }
                 setToday(activeRecord);
             } else {
+                // Check if there is an unsaved draft for today
+                const newDraft = localStorage.getItem('delivery_draft_new');
+                if (newDraft) {
+                    try {
+                        const parsedDraft = JSON.parse(newDraft);
+                        if (parsedDraft.data === getLocalDateString()) {
+                            setToday(parsedDraft);
+                            setIsLoading(false);
+                            return;
+                        }
+                    } catch (e) {
+                        console.error("Erro ao carregar rascunho temporário:", e);
+                    }
+                }
                 startNewSession();
             }
         } catch (e) {
@@ -121,6 +141,7 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
         if (today && today.id) {
             localStorage.removeItem(`delivery_draft_${today.id}`);
         }
+        localStorage.removeItem('delivery_draft_new');
         setToday({
             id: null,
             data: getLocalDateString(),
@@ -140,8 +161,9 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
     }, []);
 
     useEffect(() => {
-        if (today && today.id) {
-            localStorage.setItem(`delivery_draft_${today.id}`, JSON.stringify(today));
+        if (today) {
+            const key = today.id ? `delivery_draft_${today.id}` : 'delivery_draft_new';
+            localStorage.setItem(key, JSON.stringify(today));
         }
     }, [today]);
 
@@ -200,6 +222,7 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
         // Always assign a client-side ID immediately if none exists and they clock in
         if (!recordToSave.id && (recordToSave.entrada || updatedFields.entrada)) {
             recordToSave.id = 'del-' + Date.now().toString() + Math.random().toString().slice(2, 6);
+            localStorage.removeItem('delivery_draft_new');
         }
         
         setToday(recordToSave);
@@ -294,7 +317,7 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
         }
     };
 
-    const isPastDayShift = today.entrada && !today.saida && today.data !== getLocalDateString();
+
 
     return (
         <div className="delivery-tracker-container">
@@ -351,8 +374,8 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
                             </div>
                         )}
 
-                        {/* Past Day Shift Warning */}
-                        {isPastDayShift && (
+                        {/* Past Day Shift Alert Banner */}
+                        {pendingPastShift && (
                             <div className="past-shift-warning" style={{
                                 background: 'rgba(239, 68, 68, 0.08)',
                                 border: '1px solid rgba(239, 68, 68, 0.2)',
@@ -363,38 +386,171 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
                                 fontSize: '0.85rem'
                             }}>
                                 <p style={{margin: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px'}}>
-                                    ⚠️ Turno do dia {today.data.split('-').reverse().join('/')} pendente!
+                                    ⚠️ Turno Pendente do Dia {pendingPastShift.data.split('-').reverse().join('/')}!
                                 </p>
                                 <p style={{margin: '6px 0 10px 0', color: '#f87171', fontSize: '0.75rem'}}>
-                                    Este expediente ficou aberto desde ontem. Preencha as informações abaixo para finalizar ou descarte-o se for um teste.
+                                    Você tem um expediente que ficou aberto deste dia (Entrada: {pendingPastShift.entrada}). Preencha os dados abaixo para salvá-lo e finalizá-lo:
                                 </p>
-                                <div style={{display: 'flex', gap: '8px'}}>
-                                    <button onClick={registerExit} style={{
-                                        background: '#10b981',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '4px',
-                                        padding: '5px 10px',
-                                        fontSize: '0.75rem',
-                                        fontWeight: 'bold',
-                                        cursor: 'pointer',
-                                        flex: 1
-                                    }}>
-                                        Finalizar Turno
-                                    </button>
-                                    <button onClick={cancelActiveShift} style={{
-                                        background: '#ef4444',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '4px',
-                                        padding: '5px 10px',
-                                        fontSize: '0.75rem',
-                                        fontWeight: 'bold',
-                                        cursor: 'pointer',
-                                        flex: 1
-                                    }}>
-                                        Descartar Turno
-                                    </button>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <div style={{ flex: 1 }}>
+                                            <span style={{ fontSize: '0.65rem', color: '#94a3b8', display: 'block', marginBottom: '2px' }}>KM Inicial</span>
+                                            <input 
+                                                type="number" 
+                                                placeholder="KM Inicial" 
+                                                value={pendingPastShift.km_inicial || ''}
+                                                onChange={(e) => {
+                                                    const val = parseFloat(e.target.value) || 0;
+                                                    setPendingPastShift((prev: any) => ({ ...prev, km_inicial: val }));
+                                                }}
+                                                style={{ 
+                                                    width: '100%', 
+                                                    fontSize: '0.75rem', 
+                                                    padding: '6px',
+                                                    background: 'rgba(255,255,255,0.05)',
+                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                    borderRadius: '4px',
+                                                    color: 'white'
+                                                }}
+                                            />
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <span style={{ fontSize: '0.65rem', color: '#94a3b8', display: 'block', marginBottom: '2px' }}>KM Final</span>
+                                            <input 
+                                                type="number" 
+                                                placeholder="KM Final" 
+                                                value={pendingPastShift.km_final || ''}
+                                                onChange={(e) => {
+                                                    const val = parseFloat(e.target.value) || 0;
+                                                    setPendingPastShift((prev: any) => ({ ...prev, km_final: val }));
+                                                }}
+                                                style={{ 
+                                                    width: '100%', 
+                                                    fontSize: '0.75rem', 
+                                                    padding: '6px',
+                                                    background: 'rgba(255,255,255,0.05)',
+                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                    borderRadius: '4px',
+                                                    color: 'white'
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <div style={{ flex: 1 }}>
+                                            <span style={{ fontSize: '0.65rem', color: '#94a3b8', display: 'block', marginBottom: '2px' }}>Ganhos (R$)</span>
+                                            <input 
+                                                type="number" 
+                                                placeholder="Ganhos R$" 
+                                                value={pendingPastShift.ganhos || ''}
+                                                onChange={(e) => {
+                                                    const val = parseFloat(e.target.value) || 0;
+                                                    setPendingPastShift((prev: any) => ({ ...prev, ganhos: val }));
+                                                }}
+                                                style={{ 
+                                                    width: '100%', 
+                                                    fontSize: '0.75rem', 
+                                                    padding: '6px',
+                                                    background: 'rgba(255,255,255,0.05)',
+                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                    borderRadius: '4px',
+                                                    color: 'white'
+                                                }}
+                                            />
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <span style={{ fontSize: '0.65rem', color: '#94a3b8', display: 'block', marginBottom: '2px' }}>Gasolina (R$)</span>
+                                            <input 
+                                                type="number" 
+                                                placeholder="Gasolina R$" 
+                                                value={pendingPastShift.gasolina || ''}
+                                                onChange={(e) => {
+                                                    const val = parseFloat(e.target.value) || 0;
+                                                    setPendingPastShift((prev: any) => ({ ...prev, gasolina: val }));
+                                                }}
+                                                style={{ 
+                                                    width: '100%', 
+                                                    fontSize: '0.75rem', 
+                                                    padding: '6px',
+                                                    background: 'rgba(255,255,255,0.05)',
+                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                    borderRadius: '4px',
+                                                    color: 'white'
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div style={{display: 'flex', gap: '8px', marginTop: '6px'}}>
+                                        <button 
+                                            onClick={async () => {
+                                                if (!pendingPastShift.km_inicial || pendingPastShift.km_inicial <= 0) {
+                                                    alert("⚠️ Campo Obrigatório: Por favor, informe o KM Inicial.");
+                                                    return;
+                                                }
+                                                if (!pendingPastShift.km_final || pendingPastShift.km_final <= 0) {
+                                                    alert("⚠️ Campo Obrigatório: Por favor, informe o KM Final.");
+                                                    return;
+                                                }
+                                                if (Number(pendingPastShift.km_final) <= Number(pendingPastShift.km_inicial)) {
+                                                    alert("⚠️ Inconsistência: O KM Final deve ser maior que o KM Inicial!");
+                                                    return;
+                                                }
+                                                if (!pendingPastShift.ganhos || pendingPastShift.ganhos <= 0) {
+                                                    alert("⚠️ Campo Obrigatório: Por favor, informe os seus Ganhos.");
+                                                    return;
+                                                }
+                                                if (pendingPastShift.gasolina === undefined || pendingPastShift.gasolina === null || pendingPastShift.gasolina < 0) {
+                                                    alert("⚠️ Campo Obrigatório: Por favor, informe o gasto com Gasolina.");
+                                                    return;
+                                                }
+                                                
+                                                const record = { 
+                                                    ...pendingPastShift, 
+                                                    saida: pendingPastShift.saida || '23:59' 
+                                                };
+                                                
+                                                await api.saveDeliveryRecord(record);
+                                                localStorage.removeItem(`delivery_draft_${record.id}`);
+                                                setPendingPastShift(null);
+                                                await loadData();
+                                                if (onRefresh) onRefresh();
+                                            }}
+                                            style={{
+                                                background: '#10b981',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                padding: '8px',
+                                                fontSize: '0.75rem',
+                                                fontWeight: 'bold',
+                                                cursor: 'pointer',
+                                                flex: 1
+                                            }}
+                                        >
+                                            💾 Finalizar e Salvar
+                                        </button>
+                                        <button 
+                                            onClick={async () => {
+                                                if (!window.confirm("⚠️ Deseja realmente descartar este turno antigo de outro dia? Os dados serão apagados.")) return;
+                                                await api.deleteDeliveryRecord(pendingPastShift.id);
+                                                localStorage.removeItem(`delivery_draft_${pendingPastShift.id}`);
+                                                setPendingPastShift(null);
+                                                await loadData();
+                                                if (onRefresh) onRefresh();
+                                            }}
+                                            style={{
+                                                background: 'rgba(239, 68, 68, 0.2)',
+                                                color: '#f87171',
+                                                border: '1px solid rgba(239, 68, 68, 0.4)',
+                                                borderRadius: '4px',
+                                                padding: '8px',
+                                                fontSize: '0.75rem',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            🗑️ Descartar
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         )}
