@@ -561,17 +561,15 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
                             ) : !today.saida ? (
                                 <div style={{display: 'flex', flexDirection: 'column', gap: '8px', width: '100%'}}>
                                     <button className="ponto-btn btn-saida" onClick={registerExit}>Registrar Saída</button>
-                                    {!isPastDayShift && (
-                                        <button className="ponto-btn btn-descartar" onClick={cancelActiveShift} style={{
-                                            background: 'rgba(239, 68, 68, 0.1)',
-                                            color: '#ef4444',
-                                            border: '1px solid rgba(239, 68, 68, 0.2)',
-                                            fontSize: '0.8rem',
-                                            padding: '8px'
-                                        }}>
-                                            🗑️ Descartar Turno Ativo
-                                        </button>
-                                    )}
+                                    <button className="ponto-btn btn-descartar" onClick={cancelActiveShift} style={{
+                                        background: 'rgba(239, 68, 68, 0.1)',
+                                        color: '#ef4444',
+                                        border: '1px solid rgba(239, 68, 68, 0.2)',
+                                        fontSize: '0.8rem',
+                                        padding: '8px'
+                                    }}>
+                                        🗑️ Descartar Turno Ativo
+                                    </button>
                                 </div>
                             ) : (
                                 <div style={{width: '100%', textAlign: 'center'}}>
