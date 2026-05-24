@@ -60,6 +60,8 @@ const AppContent: React.FC = () => {
     };
     const [isAuthenticated, setIsAuthenticated] = useState(true);
     const [activeSection, setActiveSection] = useState('dashboard');
+    const [notificationsActiveTab, setNotificationsActiveTab] = useState<'urgent' | 'all' | 'completed'>('urgent');
+    const [notificationsSearchQuery, setNotificationsSearchQuery] = useState('');
     const [exchangeRate, setExchangeRate] = useState(5.00);
     const [transactions, setTransactions] = useState<Deposit[]>([]);
     const [objectives, setObjectives] = useState<Objective[]>(initialObjectives);
@@ -200,6 +202,19 @@ const AppContent: React.FC = () => {
         }
     };
 
+    const handleToggleTaskComplete = async (taskId: string) => {
+        const task = tasks.find(t => String(t.id) === String(taskId));
+        if (task) {
+            const updated = { ...task, completed: !task.completed, status: !task.completed ? 'done' as const : 'todo' as const };
+            try {
+                await api.updateTask(updated);
+                setTasks(prev => prev.map(t => String(t.id) === String(taskId) ? updated : t));
+            } catch (err) {
+                console.error("Erro ao atualizar status da tarefa:", err);
+            }
+        }
+    };
+
     const handleUpdateObjective = async (updatedObj: Objective) => {
         try {
             await api.updateObjective(updatedObj);
@@ -250,6 +265,7 @@ const AppContent: React.FC = () => {
                 const numParcelas = parseInt(newD.qtd);
                 const valorParcela = typeof newD.vlrP === 'number' ? newD.vlrP : parseFloat(String(newD.vlrP).replace(',', '.'));
                 const diaVencimento = parseInt(newD.vencimento) || 5;
+                const paidCount = parseInt(newD.parcelasPagas) || 0;
 
                 for (let i = 1; i <= numParcelas; i++) {
                     const taskDateObj = new Date();
@@ -259,12 +275,13 @@ const AppContent: React.FC = () => {
                     taskDateObj.setDate(Math.min(diaVencimento, lastDayOfMonth));
 
                     const taskDate = taskDateObj.toISOString().split('T')[0];
+                    const isAlreadyPaid = i <= paidCount;
                     const newTask = await api.addTask({
                         title: `Contrato ${newD.banco}: Parcela ${i}/${numParcelas}`,
                         date: taskDate,
                         description: `Pagamento da parcela ${i} de ${numParcelas} no valor de R$ ${valorParcela.toFixed(2)} (${newD.titular})`,
-                        completed: false,
-                        status: 'todo',
+                        completed: isAlreadyPaid,
+                        status: isAlreadyPaid ? 'done' : 'todo',
                         priority: 'normal',
                         referenceId: newD.id,
                         referenceType: 'DEBT'
@@ -278,10 +295,19 @@ const AppContent: React.FC = () => {
             await api.updateDebt(d);
             setDebts(prev => prev.map(item => item.id === d.id ? d : item));
 
-            if (d.tipo === 'parcelado' && (!oldDebt || oldDebt.tipo !== 'parcelado' || oldDebt.vencimento !== d.vencimento)) {
+            // Remove existing tasks for this debt to prevent duplicates before generating new ones
+            const tasksToDelete = tasks.filter(t => String(t.referenceId) === String(d.id) && t.referenceType === 'DEBT');
+            for (const t of tasksToDelete) {
+                await api.deleteTask(t.id);
+            }
+            const filteredTasks = tasks.filter(t => !(String(t.referenceId) === String(d.id) && t.referenceType === 'DEBT'));
+
+            let newGeneratedTasks: any[] = [];
+            if (d.tipo === 'parcelado') {
                 const numParcelas = parseInt(d.qtd);
                 const valorParcela = typeof d.vlrP === 'number' ? d.vlrP : parseFloat(String(d.vlrP).replace(',', '.'));
                 const diaVencimento = parseInt(d.vencimento) || 5;
+                const paidCount = parseInt(d.parcelasPagas) || 0;
 
                 for (let i = 1; i <= numParcelas; i++) {
                     const taskDateObj = new Date();
@@ -290,23 +316,32 @@ const AppContent: React.FC = () => {
                     taskDateObj.setDate(Math.min(diaVencimento, lastDayOfMonth));
 
                     const taskDate = taskDateObj.toISOString().split('T')[0];
+                    const isAlreadyPaid = i <= paidCount;
                     const newTask = await api.addTask({
                         title: `Contrato ${d.banco}: Parcela ${i}/${numParcelas}`,
                         date: taskDate,
                         description: `Pagamento da parcela ${i} de ${numParcelas} no valor de R$ ${valorParcela.toFixed(2)} (${d.titular})`,
-                        completed: false,
-                        status: 'todo',
+                        completed: isAlreadyPaid,
+                        status: isAlreadyPaid ? 'done' : 'todo',
                         priority: 'normal',
                         referenceId: d.id,
                         referenceType: 'DEBT'
                     });
-                    setTasks(prev => [...prev, newTask]);
+                    newGeneratedTasks.push(newTask);
                 }
             }
+            setTasks([...filteredTasks, ...newGeneratedTasks]);
         },
         remove: async (id: any) => {
             await api.deleteDebt(id);
             setDebts(prev => prev.filter(item => item.id !== id));
+            
+            // Delete associated tasks
+            const tasksToDelete = tasks.filter(t => String(t.referenceId) === String(id) && t.referenceType === 'DEBT');
+            for (const t of tasksToDelete) {
+                await api.deleteTask(t.id);
+            }
+            setTasks(prev => prev.filter(t => !(String(t.referenceId) === String(id) && t.referenceType === 'DEBT')));
         }
     };
 
@@ -525,6 +560,132 @@ const AppContent: React.FC = () => {
                     );
                 case 'delivery':
                     return <DeliveryTracker onRefresh={loadData} />;
+                case 'notifications': {
+                    const todayDateStr = new Date().toDateString();
+                    const pendingTasksList = tasks.filter(t => !t.completed);
+                    const urgentTasksList = pendingTasksList.filter(t => {
+                        if (!t.date) return false;
+                        const taskDateObj = new Date(t.date + 'T12:00:00');
+                        if (isNaN(taskDateObj.getTime())) return false;
+                        return taskDateObj <= new Date(todayDateStr);
+                    });
+
+                    const filteredNotifications = (
+                        notificationsActiveTab === 'urgent' 
+                            ? urgentTasksList 
+                            : notificationsActiveTab === 'all' 
+                                ? pendingTasksList 
+                                : tasks.filter(t => t.completed)
+                    ).filter(t => 
+                        t.title.toLowerCase().includes(notificationsSearchQuery.toLowerCase()) || 
+                        (t.description || '').toLowerCase().includes(notificationsSearchQuery.toLowerCase())
+                    );
+
+                    return (
+                        <div className="premium-container" style={{maxWidth: '1000px', margin: '0 auto', padding: '20px'}}>
+                            <div className="premium-header" style={{marginBottom: '25px'}}>
+                                <h2 style={{fontSize: '1.8rem', fontWeight: 800, color: 'white', display: 'flex', alignItems: 'center', gap: '10px'}}>
+                                    <span>🔔</span> Central de Avisos & Lembretes
+                                </h2>
+                                <p style={{color: 'rgba(255, 255, 255, 0.6)', marginTop: '5px'}}>
+                                    Fique de olho nas suas parcelas e compromissos. Você tem <strong style={{color: '#e74c3c'}}>{urgentTasksList.length}</strong> pendências urgentes e <strong style={{color: '#3498db'}}>{pendingTasksList.length}</strong> no total.
+                                </p>
+                            </div>
+
+                            <div style={{background: 'rgba(20, 20, 30, 0.6)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '20px', overflow: 'hidden'}} className="glass">
+                                <div style={{padding: '20px', background: 'rgba(0, 0, 0, 0.2)', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', flexWrap: 'wrap', gap: '15px', justifyContent: 'space-between', alignItems: 'center'}}>
+                                    <div className="notification-modal-tabs" style={{border: 'none', padding: 0, background: 'transparent', width: 'auto', display: 'flex'}}>
+                                        <button 
+                                            className={`modal-tab-btn ${notificationsActiveTab === 'urgent' ? 'active' : ''}`}
+                                            onClick={() => setNotificationsActiveTab('urgent')}
+                                            style={{padding: '10px 20px', fontSize: '0.9rem'}}
+                                        >
+                                            🚨 Urgentes ({urgentTasksList.length})
+                                        </button>
+                                        <button 
+                                            className={`modal-tab-btn ${notificationsActiveTab === 'all' ? 'active' : ''}`}
+                                            onClick={() => setNotificationsActiveTab('all')}
+                                            style={{padding: '10px 20px', fontSize: '0.9rem'}}
+                                        >
+                                            📋 Todas ({pendingTasksList.length})
+                                        </button>
+                                        <button 
+                                            className={`modal-tab-btn ${notificationsActiveTab === 'completed' ? 'active' : ''}`}
+                                            onClick={() => setNotificationsActiveTab('completed')}
+                                            style={{padding: '10px 20px', fontSize: '0.9rem'}}
+                                        >
+                                            ✅ Concluídas ({tasks.filter(t => t.completed).length})
+                                        </button>
+                                    </div>
+                                    <div style={{width: '300px', maxWidth: '100%'}}>
+                                        <input 
+                                            type="text" 
+                                            placeholder="🔍 Buscar aviso ou parcela..." 
+                                            value={notificationsSearchQuery} 
+                                            onChange={(e) => setNotificationsSearchQuery(e.target.value)}
+                                            className="modal-search-input"
+                                            style={{padding: '8px 15px', borderRadius: '10px', fontSize: '0.85rem'}}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div style={{padding: '25px', maxHeight: '600px', overflowY: 'auto'}}>
+                                    {filteredNotifications.length === 0 ? (
+                                        <div className="modal-no-tasks" style={{padding: '40px 20px'}}>
+                                            <div className="no-tasks-icon">🎉</div>
+                                            <p>Nenhuma notificação encontrada nesta aba!</p>
+                                        </div>
+                                    ) : (
+                                        <div className="modal-tasks-list">
+                                            {filteredNotifications.map(task => {
+                                                const hasDate = !!task.date;
+                                                const taskDateObj = hasDate ? new Date(task.date + 'T12:00:00') : new Date(NaN);
+                                                const isLate = !task.completed && !isNaN(taskDateObj.getTime()) && taskDateObj < new Date(todayDateStr);
+                                                const daysLate = isLate ? Math.floor((new Date(todayDateStr).getTime() - taskDateObj.getTime()) / (1000 * 3600 * 24)) : 0;
+
+                                                return (
+                                                    <div key={task.id} className={`modal-task-item ${task.completed ? 'completed' : isLate ? 'late' : 'pending'}`}>
+                                                        <div className="task-indicator-dot"></div>
+                                                        <div className="modal-task-content-wrapper">
+                                                            <div className="modal-task-main-info">
+                                                                <span className="modal-task-title">{task.title}</span>
+                                                                {task.description && <p className="modal-task-desc" style={{margin: '4px 0 0 0'}}>{task.description}</p>}
+                                                            </div>
+                                                            <div className="modal-task-date-info">
+                                                                <span className="modal-task-date-badge">
+                                                                    📅 {hasDate ? task.date : 'Sem data'}
+                                                                </span>
+                                                                {isLate && (
+                                                                    <span className="modal-task-status-badge late">
+                                                                        ⚠️ Atrasada {daysLate} dia{daysLate > 1 ? 's' : ''}
+                                                                    </span>
+                                                                )}
+                                                                {task.completed && (
+                                                                    <span className="modal-task-status-badge done">
+                                                                        ✅ Concluída
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <div className="modal-task-actions">
+                                                            <button 
+                                                                className={`modal-task-action-btn ${task.completed ? 'undo' : 'complete'}`}
+                                                                onClick={() => handleToggleTaskComplete(task.id)}
+                                                                title={task.completed ? "Marcar como pendente" : "Marcar como concluída"}
+                                                            >
+                                                                {task.completed ? "↩ Refazer" : "✓ Concluir"}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    );
+                }
                 default:
                     return (
                         <DashboardView
@@ -588,12 +749,17 @@ const AppContent: React.FC = () => {
                                  activeSection === 'objectives' ? 'Todos os Objetivos' :
                                  activeSection === 'premium' ? 'Contas 2026' :
                                  activeSection === 'delivery' ? 'Entregas' :
+                                 activeSection === 'notifications' ? 'Avisos & Alertas' :
                                  'Relatório'}
                             </h1>
                         </div>
 
                         <div className="header-controls">
-                            <TaskNotificationWidget tasks={tasks} onOpenTasks={() => setActiveSection('tasks')} />
+                            <TaskNotificationWidget 
+                                tasks={tasks} 
+                                onOpenTasks={() => setActiveSection('notifications')} 
+                                onToggleComplete={handleToggleTaskComplete} 
+                            />
                             <Clock />
                             <div className="total-goal-badge">
                                 <span className="total-goal-icon">🎯</span>

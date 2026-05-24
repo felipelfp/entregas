@@ -75,7 +75,7 @@
     align-items: center;
     gap: 0.5rem;
     flex-shrink: 0;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .total-goal-badge {

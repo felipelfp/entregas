@@ -63,6 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, onNavigate: setActiveS
         { id: 'report', icon: '📈', label: 'Relatório' },
         { id: 'premium', icon: '💎', label: 'Contas 2026' },
         { id: 'delivery', icon: '🛵', label: 'Entregas' },
+        { id: 'notifications', icon: '🔔', label: 'Avisos & Alertas' },
     ];
 
     const handleItemClick = (id: string) => {
