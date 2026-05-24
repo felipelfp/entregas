@@ -10,35 +10,58 @@ const PremiumDashboard: React.FC<any> = ({ debts = [], tasks = [], onAdd, onUpda
     const [newDebt, setNewDebt] = useState({ titular: 'Felipe', banco: '', valorOriginal: '', tipo: 'avista', propostaAvista: '', entrada: '', qtd: '1', vlrParcela: '', vencimento: '5' });
     const [isSaving, setIsSaving] = useState(false);
 
+    const parseBRLValue = (value: string | number): number => {
+        if (typeof value === 'number') return value;
+        if (!value) return 0;
+        
+        let str = String(value).trim();
+        
+        // If there are both dots and commas
+        if (str.includes('.') && str.includes(',')) {
+            const firstDot = str.indexOf('.');
+            const firstComma = str.indexOf(',');
+            if (firstDot < firstComma) {
+                // Brazilian format: 1.234,56
+                str = str.replace(/\./g, '').replace(',', '.');
+            } else {
+                // US format: 1,234.56
+                str = str.replace(/,/g, '');
+            }
+        } else if (str.includes(',')) {
+            // Replaces single comma with dot for decimals if it looks like a decimal part
+            const parts = str.split(',');
+            if (parts.length === 2 && parts[1].length <= 2) {
+                str = str.replace(',', '.');
+            } else {
+                str = str.replace(/,/g, '');
+            }
+        } else if (str.includes('.')) {
+            // If it ends with .XX (like .56), keep the dot. Otherwise strip it as thousands.
+            const parts = str.split('.');
+            if (parts.length === 2 && parts[1].length <= 2) {
+                // Decimals, keep the dot
+            } else {
+                // Thousands
+                str = str.replace(/\./g, '');
+            }
+        }
+        
+        const num = parseFloat(str);
+        return isNaN(num) ? 0 : num;
+    };
+
     const formatBRLDisplay = (val: any) => {
         if (val === undefined || val === null || val === '') return '';
         try {
-            const num = typeof val === 'number' ? val : parseFloat(String(val).replace(/\./g, '').replace(',', '.')) || 0;
-            const validNum = !isNaN(num) && isFinite(num) ? num : 0;
-            return validNum.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const num = parseBRLValue(val);
+            return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         } catch {
             return '0,00';
         }
     };
 
     const formatBRLInput = (value: string) => {
-        let clean = value.replace(/[^0-9,]/g, '');
-        const parts = clean.split(',');
-        if (parts.length > 2) {
-            clean = parts[0] + ',' + parts.slice(1).join('');
-        }
-        if (parts.length === 2 && parts[1].length > 2) {
-            clean = parts[0] + ',' + parts[1].substring(0, 2);
-        }
-        return clean;
-    };
-
-    const parseBRLValue = (value: string | number): number => {
-        if (typeof value === 'number') return value;
-        if (!value) return 0;
-        const withoutDots = String(value).replace(/\./g, '');
-        const withDot = withoutDots.replace(',', '.');
-        return parseFloat(withDot) || 0;
+        return value.replace(/[^0-9.,]/g, '');
     };
 
     const formatCurrencyBRL = (val: number) => {
@@ -85,15 +108,44 @@ const PremiumDashboard: React.FC<any> = ({ debts = [], tasks = [], onAdd, onUpda
         return tasks.filter((t: any) => t.referenceId == d.id && t.referenceType === 'DEBT' && t.completed).length;
     };
 
+    const getNextDueDate = (d: any) => {
+        if (!d) return '';
+        if (d.tipo === 'avista') {
+            return 'À Vista';
+        }
+        
+        const paidCount = getPaidCount(d);
+        const totalQtd = parseInt(d.qtd) || 1;
+        
+        if (paidCount >= totalQtd) {
+            return 'Quitada';
+        }
+        
+        const today = new Date();
+        const dueDay = parseInt(d.vencimento) || 5;
+        
+        let nextDue = new Date(today.getFullYear(), today.getMonth(), dueDay);
+        if (today.getDate() > dueDay) {
+            nextDue.setMonth(nextDue.getMonth() + 1);
+        }
+        
+        const dd = String(nextDue.getDate()).padStart(2, '0');
+        const mm = String(nextDue.getMonth() + 1).padStart(2, '0');
+        const yyyy = nextDue.getFullYear();
+        
+        return `Parc. ${paidCount + 1}: ${dd}/${mm}/${yyyy}`;
+    };
+
     const totals = useMemo(() => {
         let orig = 0, prop = 0;
         listaFiltrada.forEach(d => {
             if (!d || d.status === 'quitado') return; 
             const v = parseBRLValue(d.valor);
             const vp = parseBRLValue(d.vlrP);
-            const qT = parseInt(d.qtd) || 1;
+            const isAvista = d.tipo === 'avista';
+            const qT = isAvista ? 1 : (parseInt(d.qtd) || 1);
             const qP = getPaidCount(d);
-            const qRem = Math.max(0, qT - qP);
+            const qRem = isAvista ? (qP >= 1 ? 0 : 1) : Math.max(0, qT - qP);
             const ent = (d.tipo === 'parcelado' && qP === 0) ? parseBRLValue(d.entrada) : 0;
             orig += v;
             prop += (vp * qRem) + ent;
@@ -293,7 +345,13 @@ const PremiumDashboard: React.FC<any> = ({ debts = [], tasks = [], onAdd, onUpda
 
                                         <div className="premium-form-row">
                                             <div><label className="premium-label">Valor Original (R$)</label><input className="premium-input" type="text" value={localDebts.find(item => item.id === d.id)?.valor ?? ''} onChange={e=>handleLocalEdit(d.id, 'valor', formatBRLInput(e.target.value))} onBlur={()=>{const raw = parseBRLValue(d.valor); handleLocalEdit(d.id, 'valor', formatBRLDisplay(raw)); handleSync({...d, valor: raw})}} maxLength={15} placeholder="0,00"/></div>
-                                            <div><label className="premium-label">Condição</label><select className="premium-select" value={d.tipo || 'avista'} onChange={e=>{handleLocalEdit(d.id, 'tipo', e.target.value); handleSync({...d, tipo: e.target.value})}}>
+                                            <div><label className="premium-label">Condição</label><select className="premium-select" value={d.tipo || 'avista'} onChange={e=>{
+                                                const newTipo = e.target.value;
+                                                const newQtd = newTipo === 'avista' ? 1 : d.qtd;
+                                                handleLocalEdit(d.id, 'tipo', newTipo);
+                                                handleLocalEdit(d.id, 'qtd', newQtd);
+                                                handleSync({...d, tipo: newTipo, qtd: newQtd});
+                                            }}>
                                                 <option value="avista">À Vista</option><option value="parcelado">Parcelado</option>
                                             </select></div>
                                         </div>
@@ -338,7 +396,7 @@ const PremiumDashboard: React.FC<any> = ({ debts = [], tasks = [], onAdd, onUpda
                                         )}
 
                                         <div className="premium-eco-label">
-                                             Total: {formatCurrencyBRL(parseBRLValue(d.vlrP) * (parseInt(d.qtd) || 1) + (d.tipo === 'parcelado' ? parseBRLValue(d.entrada) : 0))} | Eco: {formatCurrencyBRL(parseBRLValue(d.valor) - ((parseBRLValue(d.vlrP) * (parseInt(d.qtd) || 1)) + (d.tipo === 'parcelado' ? parseBRLValue(d.entrada) : 0)))}
+                                             Total: {formatCurrencyBRL(parseBRLValue(d.vlrP) * (d.tipo === 'avista' ? 1 : (parseInt(d.qtd) || 1)) + (d.tipo === 'parcelado' ? parseBRLValue(d.entrada) : 0))} | Eco: {formatCurrencyBRL(parseBRLValue(d.valor) - ((parseBRLValue(d.vlrP) * (d.tipo === 'avista' ? 1 : (parseInt(d.qtd) || 1))) + (d.tipo === 'parcelado' ? parseBRLValue(d.entrada) : 0)))}
                                         </div>
 
                                         <div className="premium-form-row" style={{alignItems: 'center', marginTop: '5px'}}>
@@ -383,6 +441,7 @@ const PremiumDashboard: React.FC<any> = ({ debts = [], tasks = [], onAdd, onUpda
                                     <th>Valor Original</th>
                                     <th>Proposta</th>
                                     <th>Parcelas</th>
+                                    <th>Vencimento</th>
                                     <th>Status</th>
                                     {onScheduleTask && <th>Ações</th>}
                                 </tr>
@@ -392,9 +451,18 @@ const PremiumDashboard: React.FC<any> = ({ debts = [], tasks = [], onAdd, onUpda
                                     <tr key={d.id || `r-${i}`}>
                                         <td style={{fontWeight: 600}}>{d.banco}</td>
                                         <td>{formatCurrencyBRL(parseBRLValue(d.valor))}</td>
-                                        <td style={{color: 'var(--premium-warning)'}}>{formatCurrencyBRL(parseBRLValue(d.vlrP) * (d.qtd || 1) + (d.tipo === 'parcelado' ? parseBRLValue(d.entrada) : 0))}</td>
+                                        <td style={{color: 'var(--premium-warning)'}}>{formatCurrencyBRL(parseBRLValue(d.vlrP) * (d.tipo === 'avista' ? 1 : (d.qtd || 1)) + (d.tipo === 'parcelado' ? parseBRLValue(d.entrada) : 0))}</td>
                                         <td>
                                             <span style={{color: '#10b981', fontWeight: 'bold'}}>{getPaidCount(d)}</span> / {d.qtd || 1}
+                                        </td>
+                                        <td style={{fontWeight: 600, color: d.status === 'andamento' ? 'var(--premium-accent)' : (d.status === 'quitado' ? '#10b981' : '#71717a')}}>
+                                            {d.status === 'andamento' ? (
+                                                getNextDueDate(d)
+                                            ) : d.status === 'quitado' ? (
+                                                'Quitado'
+                                            ) : (
+                                                <span style={{color: '#71717a', fontStyle: 'italic'}}>Pendente</span>
+                                            )}
                                         </td>
                                         <td className={`status-${d.status || 'pendente'}`}>{(d.status || 'pendente').toUpperCase()}</td>
                                         {onScheduleTask && <td>
@@ -408,6 +476,8 @@ const PremiumDashboard: React.FC<any> = ({ debts = [], tasks = [], onAdd, onUpda
                                     <td style={{fontWeight: 800, color: 'white'}}>TOTAIS FILTRADOS</td>
                                     <td style={{fontWeight: 800, color: 'var(--premium-accent)'}}>{formatCurrencyBRL(totals.orig)}</td>
                                     <td style={{fontWeight: 800, color: 'var(--premium-warning)'}}>{formatCurrencyBRL(totals.prop)}</td>
+                                    <td></td>
+                                    <td></td>
                                     <td style={{fontWeight: 800, color: 'var(--premium-success)'}}>
                                         Economia: {formatCurrencyBRL(totals.eco)}
                                     </td>

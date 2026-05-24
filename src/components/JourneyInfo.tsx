@@ -85,15 +85,44 @@ const JourneyInfo: React.FC<JourneyInfoProps> = ({ exchangeRate, accumulatedBRL,
         return () => clearInterval(timer);
     }, []);
 
-    const parseBRLValue = (value: any): number => {
+    const parseBRLValue = (value: string | number): number => {
         if (typeof value === 'number') return value;
         if (!value) return 0;
-        const s = String(value).trim();
-        if (s.includes(',')) {
-            const clean = s.replace(/\./g, '').replace(',', '.');
-            return parseFloat(clean) || 0;
+        
+        let str = String(value).trim();
+        
+        // If there are both dots and commas
+        if (str.includes('.') && str.includes(',')) {
+            const firstDot = str.indexOf('.');
+            const firstComma = str.indexOf(',');
+            if (firstDot < firstComma) {
+                // Brazilian format: 1.234,56
+                str = str.replace(/\./g, '').replace(',', '.');
+            } else {
+                // US format: 1,234.56
+                str = str.replace(/,/g, '');
+            }
+        } else if (str.includes(',')) {
+            // Replaces single comma with dot for decimals if it looks like a decimal part
+            const parts = str.split(',');
+            if (parts.length === 2 && parts[1].length <= 2) {
+                str = str.replace(',', '.');
+            } else {
+                str = str.replace(/,/g, '');
+            }
+        } else if (str.includes('.')) {
+            // If it ends with .XX (like .56), keep the dot. Otherwise strip it as thousands.
+            const parts = str.split('.');
+            if (parts.length === 2 && parts[1].length <= 2) {
+                // Decimals, keep the dot
+            } else {
+                // Thousands
+                str = str.replace(/\./g, '');
+            }
         }
-        return parseFloat(s) || 0;
+        
+        const num = parseFloat(str);
+        return isNaN(num) ? 0 : num;
     };
 
     const totalRemainingDebtsBRL = Array.isArray(debts)
