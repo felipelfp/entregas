@@ -336,30 +336,75 @@ export const api = {
             if (!response.ok) throw new Error();
             return await response.json();
         } catch {
-            return { profit: 0, km: 0, gasolina: 0, manutencao: 0, ganhosBrutos: 0 };
+            const local = getLocal('deliveries') || [];
+            let totalGanhos = 0, totalGasolina = 0, totalManutencao = 0, totalKm = 0, totalAntecipacao = 0;
+            local.forEach((d: any) => {
+                totalGanhos     += Number(d.ganhos || 0);
+                totalGasolina   += Number(d.gasolina || 0);
+                totalManutencao += Number(d.manutencao || 0);
+                totalAntecipacao+= Number(d.antecipacao || 0);
+                const km = Number(d.km_final || 0) - Number(d.km_inicial || 0);
+                if (km > 0) totalKm += km;
+            });
+            const profit = totalGanhos - (totalGasolina + totalManutencao + totalAntecipacao);
+            return { profit, km: totalKm, gasolina: totalGasolina, manutencao: totalManutencao, ganhosBrutos: totalGanhos };
         }
     },
     getDeliveryHistory: async () => {
         try {
             const response = await fetch(`${API_URL}/delivery-history`);
             if (!response.ok) throw new Error();
-            return await response.json();
-        } catch { return []; }
+            const data = await response.json();
+            const local = getLocal('deliveries');
+            if (data.length === 0 && local && local.length > 0) {
+                for (const r of local) {
+                    await api.saveDeliveryRecord(r);
+                }
+                return local;
+            }
+            setLocal('deliveries', data);
+            return data;
+        } catch {
+            return getLocal('deliveries') || [];
+        }
     },
     saveDeliveryRecord: async (record: any) => {
+        if (!record.id) {
+            record.id = 'del-' + Date.now().toString() + Math.random().toString().slice(2, 6);
+        }
         try {
             const response = await fetch(`${API_URL}/delivery-save`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(record)
             });
-            return response.ok;
-        } catch { return false; }
+            if (!response.ok) throw new Error();
+            const data = await response.json();
+            
+            const local = getLocal('deliveries') || [];
+            const exists = local.some((r: any) => r.id === data.id);
+            const updatedLocal = exists ? local.map((r: any) => r.id === data.id ? data : r) : [...local, data];
+            setLocal('deliveries', updatedLocal);
+            return data;
+        } catch {
+            const local = getLocal('deliveries') || [];
+            const exists = local.some((r: any) => r.id === record.id);
+            const updatedLocal = exists ? local.map((r: any) => r.id === record.id ? record : r) : [...local, record];
+            setLocal('deliveries', updatedLocal);
+            return record;
+        }
     },
     deleteDeliveryRecord: async (id: string) => {
         try {
             const response = await fetch(`${API_URL}/delivery-history/${id}`, { method: 'DELETE' });
-            return response.ok;
-        } catch { return false; }
+            if (!response.ok) throw new Error();
+            const local = getLocal('deliveries') || [];
+            setLocal('deliveries', local.filter((r: any) => r.id !== id));
+            return true;
+        } catch {
+            const local = getLocal('deliveries') || [];
+            setLocal('deliveries', local.filter((r: any) => r.id !== id));
+            return true;
+        }
     }
 };

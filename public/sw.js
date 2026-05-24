@@ -30,3 +30,22 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+// Abre ou foca o aplicativo quando o usuário clica na notificação do expediente
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Se a janela já estiver aberta, foca nela
+      for (const client of clientList) {
+        if (client.url === '/' || client.url.includes(self.location.origin)) {
+          return client.focus();
+        }
+      }
+      // Caso contrário, abre o aplicativo
+      if (clients.openWindow) {
+        return clients.openWindow('/');
+      }
+    })
+  );
+});
