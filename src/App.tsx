@@ -582,7 +582,7 @@ const AppContent: React.FC = () => {
                     );
 
                     return (
-                        <div className="premium-container" style={{maxWidth: '1000px', margin: '0 auto', padding: '20px'}}>
+                        <div className="premium-container" style={{width: '100%', padding: '20px', boxSizing: 'border-box'}}>
                             <div className="premium-header" style={{marginBottom: '25px'}}>
                                 <h2 style={{fontSize: '1.8rem', fontWeight: 800, color: 'white', display: 'flex', alignItems: 'center', gap: '10px'}}>
                                     <span>🔔</span> Central de Avisos & Lembretes
@@ -629,7 +629,7 @@ const AppContent: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div style={{padding: '25px', maxHeight: '600px', overflowY: 'auto'}}>
+                                <div style={{padding: '25px', maxHeight: 'calc(100vh - 280px)', overflowY: 'auto'}}>
                                     {filteredNotifications.length === 0 ? (
                                         <div className="modal-no-tasks" style={{padding: '40px 20px'}}>
                                             <div className="no-tasks-icon">🎉</div>
