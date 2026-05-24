@@ -153,14 +153,28 @@ const PremiumDashboard: React.FC<any> = ({ debts = [], tasks = [], onAdd, onUpda
         return { orig, prop, eco: Math.max(0, orig - prop) };
     }, [listaFiltrada, tasks]);
 
-    const handleSync = async (debt: any) => {
-        if (!debt || !debt.id || !onUpdate) return;
-        try {
-            setIsSaving(true);
-            await onUpdate(debt);
-            setTimeout(() => setIsSaving(false), 800);
-        } catch {
-            setIsSaving(false);
+    const localDebtsRef = React.useRef<any[]>([]);
+    useEffect(() => {
+        localDebtsRef.current = localDebts;
+    }, [localDebts]);
+
+    const syncLatest = async (id: any, overrides?: any) => {
+        const latest = localDebtsRef.current.find(item => item.id === id);
+        if (latest && onUpdate) {
+            try {
+                setIsSaving(true);
+                const merged = { ...latest, ...overrides };
+                const parsed = {
+                    ...merged,
+                    valor: parseBRLValue(merged.valor),
+                    vlrP: parseBRLValue(merged.vlrP),
+                    entrada: parseBRLValue(merged.entrada)
+                };
+                await onUpdate(parsed);
+                setTimeout(() => setIsSaving(false), 800);
+            } catch {
+                setIsSaving(false);
+            }
         }
     };
 
@@ -336,21 +350,21 @@ const PremiumDashboard: React.FC<any> = ({ debts = [], tasks = [], onAdd, onUpda
                                         <div className="premium-form-row">
                                             <div>
                                                 <label className="premium-label">Responsável</label>
-                                                <select className="premium-select" value={d.titular} onChange={e=>{handleLocalEdit(d.id, 'titular', e.target.value); handleSync({...d, titular: e.target.value})}}>
+                                                <select className="premium-select" value={d.titular} onChange={e=>{handleLocalEdit(d.id, 'titular', e.target.value); syncLatest(d.id, { titular: e.target.value })}}>
                                                     <option>Felipe</option><option>Fernanda</option><option>Casa</option>
                                                 </select>
                                             </div>
-                                            <div><label className="premium-label">Banco</label><input className="premium-input" value={d.banco || ''} onChange={e=>handleLocalEdit(d.id, 'banco', e.target.value)} onBlur={()=>handleSync(d)}/></div>
+                                            <div><label className="premium-label">Banco</label><input className="premium-input" value={d.banco || ''} onChange={e=>handleLocalEdit(d.id, 'banco', e.target.value)} onBlur={()=>{const latest = localDebtsRef.current.find(item => item.id === d.id); if (latest) syncLatest(d.id, { banco: latest.banco })}}/></div>
                                         </div>
 
                                         <div className="premium-form-row">
-                                            <div><label className="premium-label">Valor Original (R$)</label><input className="premium-input" type="text" value={localDebts.find(item => item.id === d.id)?.valor ?? ''} onChange={e=>handleLocalEdit(d.id, 'valor', formatBRLInput(e.target.value))} onBlur={()=>{const raw = parseBRLValue(d.valor); handleLocalEdit(d.id, 'valor', formatBRLDisplay(raw)); handleSync({...d, valor: raw})}} maxLength={15} placeholder="0,00"/></div>
+                                            <div><label className="premium-label">Valor Original (R$)</label><input className="premium-input" type="text" value={localDebts.find(item => item.id === d.id)?.valor ?? ''} onChange={e=>handleLocalEdit(d.id, 'valor', formatBRLInput(e.target.value))} onBlur={()=>{const latest = localDebtsRef.current.find(item => item.id === d.id); if (latest) { const raw = parseBRLValue(latest.valor); handleLocalEdit(d.id, 'valor', formatBRLDisplay(raw)); syncLatest(d.id, { valor: raw })}}} maxLength={15} placeholder="0,00"/></div>
                                             <div><label className="premium-label">Condição</label><select className="premium-select" value={d.tipo || 'avista'} onChange={e=>{
                                                 const newTipo = e.target.value;
                                                 const newQtd = newTipo === 'avista' ? 1 : d.qtd;
                                                 handleLocalEdit(d.id, 'tipo', newTipo);
                                                 handleLocalEdit(d.id, 'qtd', newQtd);
-                                                handleSync({...d, tipo: newTipo, qtd: newQtd});
+                                                syncLatest(d.id, { tipo: newTipo, qtd: newQtd });
                                             }}>
                                                 <option value="avista">À Vista</option><option value="parcelado">Parcelado</option>
                                             </select></div>
@@ -359,7 +373,7 @@ const PremiumDashboard: React.FC<any> = ({ debts = [], tasks = [], onAdd, onUpda
                                         <div className="premium-form-row">
                                             <div>
                                                 <label className="premium-label">{d.tipo === 'parcelado' ? 'Vlr. Parcela (R$)' : 'Proposta/Acordo (R$)'}</label>
-                                                <input className="premium-input" type="text" value={localDebts.find(item => item.id === d.id)?.vlrP ?? ''} onChange={e=>handleLocalEdit(d.id, 'vlrP', formatBRLInput(e.target.value))} onBlur={()=>{const raw = parseBRLValue(d.vlrP); handleLocalEdit(d.id, 'vlrP', formatBRLDisplay(raw)); handleSync({...d, vlrP: raw})}} maxLength={15} placeholder="0,00"/>
+                                                <input className="premium-input" type="text" value={localDebts.find(item => item.id === d.id)?.vlrP ?? ''} onChange={e=>handleLocalEdit(d.id, 'vlrP', formatBRLInput(e.target.value))} onBlur={()=>{const latest = localDebtsRef.current.find(item => item.id === d.id); if (latest) { const raw = parseBRLValue(latest.vlrP); handleLocalEdit(d.id, 'vlrP', formatBRLDisplay(raw)); syncLatest(d.id, { vlrP: raw })}}} maxLength={15} placeholder="0,00"/>
                                             </div>
                                             <div>
                                                 <label className="premium-label">Parcelas (Pagas / Total)</label>
@@ -367,31 +381,31 @@ const PremiumDashboard: React.FC<any> = ({ debts = [], tasks = [], onAdd, onUpda
                                                     <div style={{display: 'flex', gap: '2px'}}>
                                                         <button 
                                                             className="premium-btn-counter" 
-                                                            onClick={() => { const val = Math.max(0, getPaidCount(d) - 1); handleLocalEdit(d.id, 'parcelasPagas', val); handleSync({...d, parcelasPagas: val}) }}
+                                                            onClick={() => { const val = Math.max(0, getPaidCount(d) - 1); handleLocalEdit(d.id, 'parcelasPagas', val); syncLatest(d.id, { parcelasPagas: val }) }}
                                                             title="Diminuir"
                                                         >-</button>
                                                         <input 
                                                             className="premium-input-small" 
                                                             style={{width: '35px', textAlign: 'center', fontWeight: 'bold', color: '#10b981', border: '1px solid #10b981'}}
                                                             value={getPaidCount(d)}
-                                                            onChange={e => { const val = parseInt(e.target.value) || 0; handleLocalEdit(d.id, 'parcelasPagas', val); handleSync({...d, parcelasPagas: val}); }}
+                                                            onChange={e => { const val = parseInt(e.target.value) || 0; handleLocalEdit(d.id, 'parcelasPagas', val); syncLatest(d.id, { parcelasPagas: val }); }}
                                                         />
                                                         <button 
                                                             className="premium-btn-counter"
-                                                            onClick={() => { const val = Math.min(parseInt(d.qtd) || 0, getPaidCount(d) + 1); handleLocalEdit(d.id, 'parcelasPagas', val); handleSync({...d, parcelasPagas: val}) }}
+                                                            onClick={() => { const val = Math.min(parseInt(d.qtd) || 0, getPaidCount(d) + 1); handleLocalEdit(d.id, 'parcelasPagas', val); syncLatest(d.id, { parcelasPagas: val }) }}
                                                             title="Aumentar"
                                                         >+</button>
                                                     </div>
                                                     <span style={{fontSize: '14px', color: '#71717a'}}>/</span>
-                                                    <input className="premium-input" style={{width: '50px'}} type="number" value={d.qtd || 1} readOnly={d.tipo==='avista'} onChange={e=>handleLocalEdit(d.id, 'qtd', parseInt(e.target.value) || 1)} onBlur={()=>handleSync(d)}/>
+                                                    <input className="premium-input" style={{width: '50px'}} type="number" value={d.qtd || 1} readOnly={d.tipo==='avista'} onChange={e=>handleLocalEdit(d.id, 'qtd', parseInt(e.target.value) || 1)} onBlur={()=>{const latest = localDebtsRef.current.find(item => item.id === d.id); if (latest) syncLatest(d.id, { qtd: latest.qtd })}}/>
                                                 </div>
                                             </div>
                                         </div>
 
                                         {d.tipo === 'parcelado' && (
                                             <div className="premium-form-row">
-                                                <div><label className="premium-label">Entrada (R$)</label><input className="premium-input" type="text" value={localDebts.find(item => item.id === d.id)?.entrada ?? ''} onChange={e=>handleLocalEdit(d.id, 'entrada', formatBRLInput(e.target.value))} onBlur={()=>{const raw = parseBRLValue(d.entrada); handleLocalEdit(d.id, 'entrada', formatBRLDisplay(raw)); handleSync({...d, entrada: raw})}} placeholder="0,00" maxLength={15}/></div>
-                                                <div><label className="premium-label">Vencimento (Dia)</label><input className="premium-input" type="number" min="1" max="31" value={d.vencimento || 5} onChange={e=>handleLocalEdit(d.id, 'vencimento', parseInt(e.target.value))} onBlur={()=>handleSync(d)}/></div>
+                                                <div><label className="premium-label">Entrada (R$)</label><input className="premium-input" type="text" value={localDebts.find(item => item.id === d.id)?.entrada ?? ''} onChange={e=>handleLocalEdit(d.id, 'entrada', formatBRLInput(e.target.value))} onBlur={()=>{const latest = localDebtsRef.current.find(item => item.id === d.id); if (latest) { const raw = parseBRLValue(latest.entrada); handleLocalEdit(d.id, 'entrada', formatBRLDisplay(raw)); syncLatest(d.id, { entrada: raw })}}} placeholder="0,00" maxLength={15}/></div>
+                                                <div><label className="premium-label">Vencimento (Dia)</label><input className="premium-input" type="number" min="1" max="31" value={d.vencimento || 5} onChange={e=>handleLocalEdit(d.id, 'vencimento', parseInt(e.target.value))} onBlur={()=>{const latest = localDebtsRef.current.find(item => item.id === d.id); if (latest) syncLatest(d.id, { vencimento: latest.vencimento })}}/></div>
                                             </div>
                                         )}
 
@@ -400,7 +414,7 @@ const PremiumDashboard: React.FC<any> = ({ debts = [], tasks = [], onAdd, onUpda
                                         </div>
 
                                         <div className="premium-form-row" style={{alignItems: 'center', marginTop: '5px'}}>
-                                            <select className="premium-select" style={{flex: 1}} value={d.status || 'pendente'} onChange={e=>{handleLocalEdit(d.id, 'status', e.target.value); handleSync({...d, status: e.target.value})}}>
+                                            <select className="premium-select" style={{flex: 1}} value={d.status || 'pendente'} onChange={e=>{handleLocalEdit(d.id, 'status', e.target.value); syncLatest(d.id, { status: e.target.value })}}>
                                                 <option value="pendente">Pendente</option><option value="andamento">Negociação</option><option value="quitado">Quitado</option>
                                             </select>
                                             {onScheduleTask && <button style={{background: 'none', border: 'none', color: '#3498db', cursor: 'pointer', fontSize: '13px', marginLeft: '5px'}} onClick={()=>onScheduleTask({title: `Conta: ${d.banco} - ${d.titular}`, referenceId: d.id, referenceType: 'DEBT'})}>Agendar Tarefa</button>}

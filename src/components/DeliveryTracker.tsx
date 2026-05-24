@@ -253,24 +253,14 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
             alert("⚠️ Erro: Não foi encontrado o horário de Entrada! Registre a entrada antes de encerrar.");
             return;
         }
-        if (!today.km_inicial || today.km_inicial <= 0) {
-            alert("⚠️ Campo Obrigatório: Por favor, informe o KM Inicial antes de fechar o expediente!");
+        const kmIni = parseFloat(today.km_inicial) || 0;
+        const kmFin = parseFloat(today.km_final) || 0;
+        if (kmFin > 0 && kmFin < kmIni) {
+            alert("⚠️ Inconsistência de KM: O KM Final não pode ser menor do que o KM Inicial!");
             return;
         }
-        if (!today.km_final || today.km_final <= 0) {
-            alert("⚠️ Campo Obrigatório: Por favor, informe o KM Final antes de fechar o expediente!");
-            return;
-        }
-        if (Number(today.km_final) <= Number(today.km_inicial)) {
-            alert("⚠️ Inconsistência de KM: O KM Final deve ser maior do que o KM Inicial!");
-            return;
-        }
-        if (!today.ganhos || today.ganhos <= 0) {
-            alert("⚠️ Campo Obrigatório: Por favor, informe os seus Ganhos (R$) do dia antes de fechar!");
-            return;
-        }
-        if (today.gasolina === undefined || today.gasolina === null || today.gasolina < 0) {
-            alert("⚠️ Campo Obrigatório: Por favor, informe o gasto com Gasolina (R$) (digite 0 se não abasteceu hoje)!");
+        if (today.gasolina === undefined || today.gasolina === null) {
+            alert("⚠️ Campo Obrigatório: Por favor, informe o gasto com Gasolina (R$) (digite 0 se não houve gasto)!");
             return;
         }
 
@@ -483,24 +473,14 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
                                     <div style={{display: 'flex', gap: '8px', marginTop: '6px'}}>
                                         <button 
                                             onClick={async () => {
-                                                if (!pendingPastShift.km_inicial || pendingPastShift.km_inicial <= 0) {
-                                                    alert("⚠️ Campo Obrigatório: Por favor, informe o KM Inicial.");
+                                                const kmIni = parseFloat(pendingPastShift.km_inicial) || 0;
+                                                const kmFin = parseFloat(pendingPastShift.km_final) || 0;
+                                                if (kmFin > 0 && kmFin < kmIni) {
+                                                    alert("⚠️ Inconsistência: O KM Final não pode ser menor que o KM Inicial!");
                                                     return;
                                                 }
-                                                if (!pendingPastShift.km_final || pendingPastShift.km_final <= 0) {
-                                                    alert("⚠️ Campo Obrigatório: Por favor, informe o KM Final.");
-                                                    return;
-                                                }
-                                                if (Number(pendingPastShift.km_final) <= Number(pendingPastShift.km_inicial)) {
-                                                    alert("⚠️ Inconsistência: O KM Final deve ser maior que o KM Inicial!");
-                                                    return;
-                                                }
-                                                if (!pendingPastShift.ganhos || pendingPastShift.ganhos <= 0) {
-                                                    alert("⚠️ Campo Obrigatório: Por favor, informe os seus Ganhos.");
-                                                    return;
-                                                }
-                                                if (pendingPastShift.gasolina === undefined || pendingPastShift.gasolina === null || pendingPastShift.gasolina < 0) {
-                                                    alert("⚠️ Campo Obrigatório: Por favor, informe o gasto com Gasolina.");
+                                                if (pendingPastShift.gasolina === undefined || pendingPastShift.gasolina === null) {
+                                                    alert("⚠️ Campo Obrigatório: Por favor, informe o gasto com Gasolina (digite 0 se não houve).");
                                                     return;
                                                 }
                                                 
