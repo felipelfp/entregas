@@ -658,6 +658,88 @@ const DeliveryTracker: React.FC<DeliveryTrackerProps> = ({ onRefresh }) => {
                             );
                         })()}
 
+                        {/* Card Meta Gasolina (Mês) */}
+                        {(() => {
+                            const META_GASOLINA_MES = 30 * 30; // R$ 900,00
+                            const totalGasolinaMes = history.reduce((s, r) => s + (Number(r.gasolina) || 0), 0);
+                            const progresso = Math.min((totalGasolinaMes / META_GASOLINA_MES) * 100, 100);
+                            return (
+                                <div className="stat-box" style={{
+                                    background: 'rgba(234,179,8,0.07)',
+                                    border: '1px solid rgba(234,179,8,0.2)',
+                                    minWidth: '160px'
+                                }}>
+                                    <span className="stat-label" style={{color: '#eab308'}}>⛽ Meta Gasolina (Mês)</span>
+                                    <span className="stat-value" style={{color: '#ffffff', fontSize: '1rem'}}>{formatBRL(META_GASOLINA_MES)}</span>
+                                    <span style={{fontSize: '0.65rem', color: '#94a3b8', display: 'block', marginTop: '2px'}}>
+                                        R$ 30 × 30 dias (Combustível)
+                                    </span>
+
+                                    {/* Barra de progresso */}
+                                    <div style={{
+                                        background: 'rgba(255,255,255,0.08)',
+                                        borderRadius: '4px',
+                                        height: '5px',
+                                        margin: '6px 0',
+                                        overflow: 'hidden'
+                                    }}>
+                                        <div style={{
+                                            width: `${progresso}%`,
+                                            height: '100%',
+                                            background: '#eab308',
+                                            borderRadius: '4px',
+                                            transition: 'width 0.5s ease'
+                                        }} />
+                                    </div>
+
+                                    <span style={{fontSize: '0.65rem', fontWeight: 800, color: '#eab308', display: 'block'}}>
+                                        Alcançado: {formatBRL(totalGasolinaMes)} ({progresso.toFixed(0)}%)
+                                    </span>
+                                </div>
+                            );
+                        })()}
+
+                        {/* Card Meta Óleo (Mês) */}
+                        {(() => {
+                            const META_OLEO_MES = 10 * 30; // R$ 300,00
+                            const totalOleoMes = history.reduce((s, r) => s + (Number(r.manutencao) || 0), 0);
+                            const progresso = Math.min((totalOleoMes / META_OLEO_MES) * 100, 100);
+                            return (
+                                <div className="stat-box" style={{
+                                    background: 'rgba(16,185,129,0.07)',
+                                    border: '1px solid rgba(16,185,129,0.2)',
+                                    minWidth: '160px'
+                                }}>
+                                    <span className="stat-label" style={{color: '#10b981'}}>🛢️ Meta Óleo (Mês)</span>
+                                    <span className="stat-value" style={{color: '#ffffff', fontSize: '1rem'}}>{formatBRL(META_OLEO_MES)}</span>
+                                    <span style={{fontSize: '0.65rem', color: '#94a3b8', display: 'block', marginTop: '2px'}}>
+                                        R$ 10 × 30 dias (Óleo / Manut.)
+                                    </span>
+
+                                    {/* Barra de progresso */}
+                                    <div style={{
+                                        background: 'rgba(255,255,255,0.08)',
+                                        borderRadius: '4px',
+                                        height: '5px',
+                                        margin: '6px 0',
+                                        overflow: 'hidden'
+                                    }}>
+                                        <div style={{
+                                            width: `${progresso}%`,
+                                            height: '100%',
+                                            background: '#10b981',
+                                            borderRadius: '4px',
+                                            transition: 'width 0.5s ease'
+                                        }} />
+                                    </div>
+
+                                    <span style={{fontSize: '0.65rem', fontWeight: 800, color: '#10b981', display: 'block'}}>
+                                        Alcançado: {formatBRL(totalOleoMes)} ({progresso.toFixed(0)}%)
+                                    </span>
+                                </div>
+                            );
+                        })()}
+
                     </div>
 
                     <div className="history-card">
